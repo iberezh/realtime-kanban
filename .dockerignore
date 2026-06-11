@@ -1,0 +1,12 @@
+**/node_modules
+**/dist
+**/.next
+**/coverage
+.git
+.github
+.husky
+assets
+*.log
+.env
+.env.*
+!.env.example
