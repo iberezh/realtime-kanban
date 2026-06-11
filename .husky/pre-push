@@ -1,0 +1,19 @@
+echo "Running type check..."
+pnpm type-check || {
+  echo "Type check failed. Fix the errors before pushing."
+  exit 1
+}
+
+echo "Running Biome..."
+pnpm lint || {
+  echo "Lint failed. Fix the errors before pushing."
+  exit 1
+}
+
+echo "Running unit tests..."
+pnpm test || {
+  echo "Tests failed. Push cancelled."
+  exit 1
+}
+
+echo "All checks passed."
