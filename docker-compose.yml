@@ -1,0 +1,21 @@
+# Local development database. The api/web services join in the release phase.
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: kanban
+      POSTGRES_PASSWORD: kanban
+      POSTGRES_DB: kanban
+    ports:
+      # Override POSTGRES_PORT if 5432 is taken by a local Postgres.
+      - '${POSTGRES_PORT:-5432}:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U kanban -d kanban']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  pgdata:

@@ -1,0 +1,12 @@
+BRANCH_NAME=$(git branch --show-current)
+
+if [ -z "$BRANCH_NAME" ] || [ "$BRANCH_NAME" = "main" ]; then
+  exit 0
+fi
+
+if ! echo "$BRANCH_NAME" | grep -qE "^(feat|fix|chore|refactor|docs|test|ci|build|perf)/[a-z0-9._-]+$"; then
+  echo "Branch name does not match the required pattern: <prefix>/<kebab-description>"
+  echo "Current branch: $BRANCH_NAME"
+  echo "Example: feat/board-ui"
+  exit 1
+fi
