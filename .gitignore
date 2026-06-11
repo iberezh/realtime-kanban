@@ -1,0 +1,20 @@
+# deps & builds
+node_modules/
+dist/
+.next/
+coverage/
+*.tsbuildinfo
+
+# env & secrets
+.env
+.env.*
+!.env.example
+
+# local-only project docs
+CLAUDE.md
+docs/
+.claude/
+
+# misc
+*.log
+.DS_Store
