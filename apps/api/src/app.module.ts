@@ -4,6 +4,7 @@ import { validateEnv } from './config/env.validation';
 import { DatabaseModule } from './database/database.module';
 import { HealthModule } from './health/health.module';
 import { KanbanModule } from './kanban/kanban.module';
+import { RealtimeModule } from './realtime/realtime.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { KanbanModule } from './kanban/kanban.module';
     DatabaseModule,
     HealthModule,
     KanbanModule,
+    RealtimeModule,
   ],
 })
 export class AppModule {}
