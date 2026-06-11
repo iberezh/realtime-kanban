@@ -1,7 +1,12 @@
 import '@mantine/core/styles.css';
-import { ColorSchemeScript, MantineProvider, mantineHtmlProps } from '@mantine/core';
+import { ColorSchemeScript, createTheme, MantineProvider, mantineHtmlProps } from '@mantine/core';
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
+
+const theme = createTheme({
+  primaryColor: 'indigo',
+  defaultRadius: 'md',
+});
 
 export const metadata: Metadata = {
   title: 'Realtime Kanban',
@@ -15,7 +20,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <ColorSchemeScript defaultColorScheme="auto" />
       </head>
       <body>
-        <MantineProvider defaultColorScheme="auto">{children}</MantineProvider>
+        <MantineProvider theme={theme} defaultColorScheme="auto">
+          {children}
+        </MantineProvider>
       </body>
     </html>
   );
