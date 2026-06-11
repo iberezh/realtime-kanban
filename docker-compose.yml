@@ -1,4 +1,5 @@
-# Local development database. The api/web services join in the release phase.
+# Full stack: `docker compose up` runs Postgres + the NestJS API + the Next.js web.
+# For API-only development run `docker compose up -d postgres` and `pnpm dev`.
 services:
   postgres:
     image: postgres:16
@@ -16,6 +17,31 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    environment:
+      PORT: 4000
+      CORS_ORIGIN: http://localhost:3000
+      DATABASE_URL: postgresql://kanban:kanban@postgres:5432/kanban
+    ports:
+      - '4000:4000'
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:4000/api/v1
+    ports:
+      - '3000:3000'
+    depends_on:
+      - api
 
 volumes:
   pgdata:

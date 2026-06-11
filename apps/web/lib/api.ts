@@ -56,6 +56,12 @@ export const updateCard = (
 export const deleteCard = (cardId: string): Promise<void> =>
   api(ENDPOINTS.card(cardId), { method: 'DELETE' });
 
+export const moveColumn = (columnId: string, beforeColumnId?: string): Promise<Column> =>
+  api(ENDPOINTS.columnMove(columnId), {
+    method: 'POST',
+    body: JSON.stringify(beforeColumnId ? { beforeColumnId } : {}),
+  });
+
 export const moveCard = (
   cardId: string,
   toColumnId: string,
