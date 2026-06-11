@@ -10,6 +10,11 @@ function upsertColumn(view: BoardView, column: Column): BoardView {
 }
 
 function upsertCard(view: BoardView, card: Card): BoardView {
+  // Events can outrun the loaded view: if the target column isn't here yet,
+  // keep the view untouched rather than dropping the card on the floor.
+  if (!view.columns.some((column) => column.id === card.columnId)) {
+    return view;
+  }
   const columns = view.columns.map((column) => {
     const rest = column.cards.filter((item) => item.id !== card.id);
     if (column.id !== card.columnId) {

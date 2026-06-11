@@ -31,13 +31,13 @@ describe('Realtime gateway (integration)', () => {
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
     app = moduleRef.createNestApplication();
-    app.setGlobalPrefix('api');
+    app.setGlobalPrefix('api/v1');
     app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
     await app.listen(0);
     url = await app.getUrl();
 
     const { body } = await request(app.getHttpServer())
-      .post('/api/boards')
+      .post('/api/v1/boards')
       .send({ title: 'Realtime board' })
       .expect(201);
     boardId = body.id;
@@ -70,7 +70,7 @@ describe('Realtime gateway (integration)', () => {
     const annEvent = waitFor<{ type: string; column: { title: string } }>(ann, 'board:event');
     const bobEvent = waitFor<{ type: string; column: { title: string } }>(bob, 'board:event');
     await request(app.getHttpServer())
-      .post(`/api/boards/${boardId}/columns`)
+      .post(`/api/v1/boards/${boardId}/columns`)
       .send({ title: 'Todo' })
       .expect(201);
 

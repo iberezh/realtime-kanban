@@ -1,35 +1,14 @@
 import { EventsHandler, type IEventHandler } from '@nestjs/cqrs';
-import {
-  BoardDeletedEvent,
-  BoardRenamedEvent,
-  CardCreatedEvent,
-  CardDeletedEvent,
-  CardMovedEvent,
-  CardUpdatedEvent,
-  ColumnCreatedEvent,
-  ColumnDeletedEvent,
-  ColumnMovedEvent,
-  ColumnRenamedEvent,
-} from '../kanban/events/kanban.events';
 import { BoardGateway } from './board.gateway';
-import { type DomainEvent, toWire } from './wire';
+import { type DomainEvent, toWire, WIRED_EVENTS } from './wire';
 
 /**
  * The only bridge between the write path and the realtime layer: domain
  * events go in, room broadcasts come out. Command handlers stay socket-free.
+ * The subscription list comes straight from the wire registry, so adding an
+ * event there is the single step needed to broadcast it.
  */
-@EventsHandler(
-  BoardRenamedEvent,
-  BoardDeletedEvent,
-  ColumnCreatedEvent,
-  ColumnRenamedEvent,
-  ColumnMovedEvent,
-  ColumnDeletedEvent,
-  CardCreatedEvent,
-  CardUpdatedEvent,
-  CardMovedEvent,
-  CardDeletedEvent,
-)
+@EventsHandler(...WIRED_EVENTS)
 export class KanbanEventsRelay implements IEventHandler<DomainEvent> {
   constructor(private readonly gateway: BoardGateway) {}
 

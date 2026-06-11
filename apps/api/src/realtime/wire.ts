@@ -37,40 +37,59 @@ export type DomainEvent =
   | CardMovedEvent
   | CardDeletedEvent;
 
+type DomainEventClass<E extends DomainEvent = DomainEvent> = new (...args: never[]) => E;
+
+const factories = new Map<DomainEventClass, (event: DomainEvent) => WireEvent>();
+
+function register<E extends DomainEvent>(
+  eventClass: DomainEventClass<E>,
+  factory: (event: E) => WireEvent,
+): void {
+  factories.set(eventClass, factory as (event: DomainEvent) => WireEvent);
+}
+
+register(BoardRenamedEvent, (e) => ({
+  type: 'board.renamed',
+  boardId: e.board.id,
+  board: e.board,
+}));
+register(BoardDeletedEvent, (e) => ({ type: 'board.deleted', boardId: e.boardId }));
+register(ColumnCreatedEvent, (e) => ({
+  type: 'column.created',
+  boardId: e.boardId,
+  column: e.column,
+}));
+register(ColumnRenamedEvent, (e) => ({
+  type: 'column.renamed',
+  boardId: e.boardId,
+  column: e.column,
+}));
+register(ColumnMovedEvent, (e) => ({ type: 'column.moved', boardId: e.boardId, column: e.column }));
+register(ColumnDeletedEvent, (e) => ({
+  type: 'column.deleted',
+  boardId: e.boardId,
+  columnId: e.columnId,
+}));
+register(CardCreatedEvent, (e) => ({ type: 'card.created', boardId: e.boardId, card: e.card }));
+register(CardUpdatedEvent, (e) => ({ type: 'card.updated', boardId: e.boardId, card: e.card }));
+register(CardMovedEvent, (e) => ({ type: 'card.moved', boardId: e.boardId, card: e.card }));
+register(CardDeletedEvent, (e) => ({
+  type: 'card.deleted',
+  boardId: e.boardId,
+  columnId: e.columnId,
+  cardId: e.cardId,
+}));
+
+/** Single source for the relay's @EventsHandler subscription list. */
+export const WIRED_EVENTS = [...factories.keys()];
+
+const unmapped = (event: DomainEvent): never => {
+  throw new Error(`No wire mapping registered for ${event.constructor.name}`);
+};
+
 export function toWire(event: DomainEvent): WireEvent {
-  if (event instanceof BoardRenamedEvent) {
-    return { type: 'board.renamed', boardId: event.board.id, board: event.board };
-  }
-  if (event instanceof BoardDeletedEvent) {
-    return { type: 'board.deleted', boardId: event.boardId };
-  }
-  if (event instanceof ColumnCreatedEvent) {
-    return { type: 'column.created', boardId: event.boardId, column: event.column };
-  }
-  if (event instanceof ColumnRenamedEvent) {
-    return { type: 'column.renamed', boardId: event.boardId, column: event.column };
-  }
-  if (event instanceof ColumnMovedEvent) {
-    return { type: 'column.moved', boardId: event.boardId, column: event.column };
-  }
-  if (event instanceof ColumnDeletedEvent) {
-    return { type: 'column.deleted', boardId: event.boardId, columnId: event.columnId };
-  }
-  if (event instanceof CardCreatedEvent) {
-    return { type: 'card.created', boardId: event.boardId, card: event.card };
-  }
-  if (event instanceof CardUpdatedEvent) {
-    return { type: 'card.updated', boardId: event.boardId, card: event.card };
-  }
-  if (event instanceof CardMovedEvent) {
-    return { type: 'card.moved', boardId: event.boardId, card: event.card };
-  }
-  return {
-    type: 'card.deleted',
-    boardId: event.boardId,
-    columnId: event.columnId,
-    cardId: event.cardId,
-  };
+  const factory = factories.get(event.constructor as DomainEventClass) ?? unmapped;
+  return factory(event);
 }
 
 export function roomOf(boardId: string): string {

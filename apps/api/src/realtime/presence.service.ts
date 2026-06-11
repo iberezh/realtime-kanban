@@ -36,7 +36,8 @@ export class PresenceService {
   /** Removes the socket everywhere (disconnect). Returns affected boards with their new lists. */
   leaveAll(socketId: string): Array<{ boardId: string; members: Member[] }> {
     const affected: Array<{ boardId: string; members: Member[] }> = [];
-    for (const boardId of this.boards.keys()) {
+    // Snapshot the keys: leave() deletes emptied boards while we iterate.
+    for (const boardId of [...this.boards.keys()]) {
       const members = this.leave(boardId, socketId);
       if (members) {
         affected.push({ boardId, members });

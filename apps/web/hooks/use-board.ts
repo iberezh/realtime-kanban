@@ -3,17 +3,17 @@
 import { useEffect } from 'react';
 import { getBoard } from '@/lib/api';
 import { getSocket } from '@/lib/socket';
-import type { Identity, Member, WireEvent } from '@/lib/types';
+import { type Identity, isWireEvent, type Member } from '@/lib/types';
 import { useBoardStore } from '@/stores/board-store';
 
 /** Loads the board, joins its realtime room, and feeds server events into the store. */
 export function useBoard(boardId: string, identity: Identity | null): void {
-  const { setView, setMembers, setError, apply, reset } = useBoardStore();
-
   useEffect(() => {
     if (!identity) {
       return;
     }
+    // Zustand actions are static — read them once instead of subscribing.
+    const { setView, setMembers, setError, apply, reset } = useBoardStore.getState();
     let active = true;
     const socket = getSocket();
 
@@ -32,8 +32,8 @@ export function useBoard(boardId: string, identity: Identity | null): void {
         (ack: { members: Member[] }) => active && setMembers(ack.members),
       );
     };
-    const onEvent = (event: WireEvent): void => {
-      if (event.boardId === boardId) {
+    const onEvent = (event: unknown): void => {
+      if (isWireEvent(event) && event.boardId === boardId) {
         apply(event);
       }
     };
@@ -57,5 +57,5 @@ export function useBoard(boardId: string, identity: Identity | null): void {
       socket.off('presence:state', onPresence);
       reset();
     };
-  }, [boardId, identity, setView, setMembers, setError, apply, reset]);
+  }, [boardId, identity]);
 }

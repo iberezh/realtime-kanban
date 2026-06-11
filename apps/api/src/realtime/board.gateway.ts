@@ -19,7 +19,8 @@ const wsValidation = new ValidationPipe({
   exceptionFactory: (errors) => new WsException(errors.map((e) => e.property).join(', ')),
 });
 
-@WebSocketGateway({ cors: { origin: process.env.CORS_ORIGIN ?? 'http://localhost:3000' } })
+// CORS for the handshake comes from ConfiguredSocketIoAdapter (see main.ts).
+@WebSocketGateway()
 export class BoardGateway implements OnGatewayDisconnect {
   @WebSocketServer()
   server!: Server;

@@ -54,3 +54,25 @@ export type WireEvent =
   | { type: 'card.updated'; boardId: string; card: Card }
   | { type: 'card.moved'; boardId: string; card: Card }
   | { type: 'card.deleted'; boardId: string; columnId: string; cardId: string };
+
+const WIRE_TYPES: ReadonlySet<string> = new Set([
+  'board.renamed',
+  'board.deleted',
+  'column.created',
+  'column.renamed',
+  'column.moved',
+  'column.deleted',
+  'card.created',
+  'card.updated',
+  'card.moved',
+  'card.deleted',
+]);
+
+/** Socket payloads arrive untyped — gate them before they reach the store. */
+export function isWireEvent(value: unknown): value is WireEvent {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+  const candidate = value as { type?: unknown; boardId?: unknown };
+  return typeof candidate.boardId === 'string' && WIRE_TYPES.has(candidate.type as string);
+}
