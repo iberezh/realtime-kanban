@@ -18,6 +18,7 @@ import { dateInputValue } from '@/lib/format';
 import { useBoardStore } from '@/stores/board-store';
 import { CardAssigneeSelect } from './card-assignee-select';
 import { CardChecklist } from './card-checklist';
+import { CardComments } from './card-comments';
 import { CardLabelPicker } from './card-label-picker';
 
 interface CardModalProps {
@@ -113,6 +114,8 @@ export function CardModal({ cardId, onClose }: CardModalProps) {
           <CardAssigneeSelect card={card} />
           <Divider />
           <CardChecklist card={card} />
+          <Divider />
+          <CardComments cardId={card.id} />
           {actionError && (
             <Alert color="red" variant="light">
               {actionError}

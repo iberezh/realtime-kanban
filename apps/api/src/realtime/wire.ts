@@ -17,6 +17,9 @@ import {
   ColumnMovedEvent,
   ColumnRenamedEvent,
   ColumnUpdatedEvent,
+  CommentCreatedEvent,
+  CommentDeletedEvent,
+  type CommentView,
 } from '../kanban/events/kanban.events';
 
 /** The wire protocol: every domain event becomes one `board:event` message in the board's room. */
@@ -37,7 +40,9 @@ export type WireEvent =
   | { type: 'card.assignee_changed'; boardId: string; card: Card }
   | { type: 'checklist.item_added'; boardId: string; cardId: string; item: ChecklistItem }
   | { type: 'checklist.item_updated'; boardId: string; cardId: string; item: ChecklistItem }
-  | { type: 'checklist.item_deleted'; boardId: string; cardId: string; itemId: string };
+  | { type: 'checklist.item_deleted'; boardId: string; cardId: string; itemId: string }
+  | { type: 'comment.created'; boardId: string; cardId: string; comment: CommentView }
+  | { type: 'comment.deleted'; boardId: string; cardId: string; commentId: string };
 
 export type DomainEvent =
   | BoardRenamedEvent
@@ -56,7 +61,9 @@ export type DomainEvent =
   | CardAssigneeChangedEvent
   | ChecklistItemAddedEvent
   | ChecklistItemUpdatedEvent
-  | ChecklistItemDeletedEvent;
+  | ChecklistItemDeletedEvent
+  | CommentCreatedEvent
+  | CommentDeletedEvent;
 
 type DomainEventClass<E extends DomainEvent = DomainEvent> = new (...args: never[]) => E;
 
@@ -139,6 +146,18 @@ register(ChecklistItemDeletedEvent, (e) => ({
   boardId: e.boardId,
   cardId: e.cardId,
   itemId: e.itemId,
+}));
+register(CommentCreatedEvent, (e) => ({
+  type: 'comment.created',
+  boardId: e.boardId,
+  cardId: e.cardId,
+  comment: e.comment,
+}));
+register(CommentDeletedEvent, (e) => ({
+  type: 'comment.deleted',
+  boardId: e.boardId,
+  cardId: e.cardId,
+  commentId: e.commentId,
 }));
 
 /** Single source for the relay's @EventsHandler subscription list. */
