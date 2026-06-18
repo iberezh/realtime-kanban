@@ -1,4 +1,4 @@
-import { NotFoundException } from '@nestjs/common';
+import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { type IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import type { Board } from '../../database/schema';
 import { BoardsRepository } from '../repositories/boards.repository';
@@ -11,8 +11,8 @@ import { assembleBoardView, type BoardView } from './board.views';
 export class ListBoardsHandler implements IQueryHandler<ListBoardsQuery, Board[]> {
   constructor(private readonly boards: BoardsRepository) {}
 
-  async execute(): Promise<Board[]> {
-    return this.boards.list();
+  async execute(query: ListBoardsQuery): Promise<Board[]> {
+    return this.boards.listByAccount(query.accountId);
   }
 }
 
@@ -26,9 +26,9 @@ export class GetBoardHandler implements IQueryHandler<GetBoardQuery, BoardView> 
 
   async execute(query: GetBoardQuery): Promise<BoardView> {
     const board = await this.boards.findById(query.boardId);
-    if (!board) {
-      throw new NotFoundException(`Board ${query.boardId} not found`);
-    }
+    if (!board) throw new NotFoundException(`Board ${query.boardId} not found`);
+    if (board.accountId !== query.accountId) throw new ForbiddenException();
+
     const [columns, cards] = await Promise.all([
       this.columns.listByBoard(board.id),
       this.cards.listByBoard(board.id),

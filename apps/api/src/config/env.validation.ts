@@ -8,11 +8,16 @@ export class EnvironmentVariables {
   PORT: number = 4000;
 
   @IsString()
-  CORS_ORIGIN: string = 'http://localhost:3000';
+  CORS_ORIGIN: string = 'http://localhost:3002';
 
   @IsString()
   @MinLength(1)
   DATABASE_URL!: string;
+
+  /** Signs and verifies JWTs. Must be at least 16 characters. */
+  @IsString()
+  @MinLength(16)
+  JWT_SECRET!: string;
 }
 
 export function validateEnv(config: Record<string, unknown>): EnvironmentVariables {

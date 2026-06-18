@@ -1,4 +1,4 @@
-import { NotFoundException } from '@nestjs/common';
+import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { CommandHandler, EventBus, type ICommandHandler } from '@nestjs/cqrs';
 import type { Board } from '../../database/schema';
 import { BoardCreatedEvent, BoardDeletedEvent, BoardRenamedEvent } from '../events/kanban.events';
@@ -13,7 +13,7 @@ export class CreateBoardHandler implements ICommandHandler<CreateBoardCommand, B
   ) {}
 
   async execute(command: CreateBoardCommand): Promise<Board> {
-    const board = await this.boards.create(command.title);
+    const board = await this.boards.create(command.title, command.accountId);
     this.eventBus.publish(new BoardCreatedEvent(board));
     return board;
   }
@@ -27,10 +27,13 @@ export class RenameBoardHandler implements ICommandHandler<RenameBoardCommand, B
   ) {}
 
   async execute(command: RenameBoardCommand): Promise<Board> {
+    const existing = await this.boards.findById(command.boardId);
+    if (!existing) throw new NotFoundException(`Board ${command.boardId} not found`);
+    if (existing.accountId !== command.accountId) throw new ForbiddenException();
+
     const board = await this.boards.rename(command.boardId, command.title);
-    if (!board) {
-      throw new NotFoundException(`Board ${command.boardId} not found`);
-    }
+    if (!board) throw new NotFoundException(`Board ${command.boardId} not found`);
+
     this.eventBus.publish(new BoardRenamedEvent(board));
     return board;
   }
@@ -44,10 +47,13 @@ export class DeleteBoardHandler implements ICommandHandler<DeleteBoardCommand, v
   ) {}
 
   async execute(command: DeleteBoardCommand): Promise<void> {
+    const existing = await this.boards.findById(command.boardId);
+    if (!existing) throw new NotFoundException(`Board ${command.boardId} not found`);
+    if (existing.accountId !== command.accountId) throw new ForbiddenException();
+
     const deleted = await this.boards.delete(command.boardId);
-    if (!deleted) {
-      throw new NotFoundException(`Board ${command.boardId} not found`);
-    }
+    if (!deleted) throw new NotFoundException(`Board ${command.boardId} not found`);
+
     this.eventBus.publish(new BoardDeletedEvent(command.boardId));
   }
 }
