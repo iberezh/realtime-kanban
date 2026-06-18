@@ -7,6 +7,7 @@ import { HealthModule } from './health/health.module';
 import { KanbanModule } from './kanban/kanban.module';
 import { LabelsModule } from './labels/labels.module';
 import { RealtimeModule } from './realtime/realtime.module';
+import { ShareModule } from './share/share.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { RealtimeModule } from './realtime/realtime.module';
     KanbanModule,
     LabelsModule,
     RealtimeModule,
+    ShareModule,
   ],
 })
 export class AppModule {}

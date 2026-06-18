@@ -17,3 +17,10 @@ export class LeaveBoardDto {
   @IsUUID()
   boardId!: string;
 }
+
+export class GuestJoinDto {
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(64)
+  token!: string;
+}

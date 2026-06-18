@@ -17,6 +17,7 @@ import { CardModal } from './card-modal';
 import { ColumnView } from './column-view';
 import { InlineAdd } from './inline-add';
 import { LabelManager } from './label-manager';
+import { ShareDialog } from './share-dialog';
 
 interface BoardScreenProps {
   boardId: string;
@@ -26,6 +27,7 @@ export function BoardScreen({ boardId }: BoardScreenProps) {
   const [openCardId, setOpenCardId] = useState<string | null>(null);
   const [labelsOpen, setLabelsOpen] = useState(false);
   const [activityOpen, setActivityOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
   // Subscribe per-field: a bare useBoardStore() re-renders on every mutation.
   const view = useBoardStore((s) => s.view);
   const members = useBoardStore((s) => s.members);
@@ -67,6 +69,7 @@ export function BoardScreen({ boardId }: BoardScreenProps) {
         members={members}
         onOpenLabels={() => setLabelsOpen(true)}
         onOpenActivity={() => setActivityOpen(true)}
+        onOpenShare={() => setShareOpen(true)}
       />
       <DndContext
         sensors={sensors}
@@ -109,6 +112,7 @@ export function BoardScreen({ boardId }: BoardScreenProps) {
       </DndContext>
       {openCardId && <CardModal cardId={openCardId} onClose={closeCard} />}
       <LabelManager opened={labelsOpen} onClose={() => setLabelsOpen(false)} />
+      <ShareDialog boardId={boardId} opened={shareOpen} onClose={() => setShareOpen(false)} />
       <ActivityFeed
         boardId={boardId}
         opened={activityOpen}
