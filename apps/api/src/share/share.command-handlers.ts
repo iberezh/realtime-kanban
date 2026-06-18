@@ -1,5 +1,7 @@
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { CommandHandler, type ICommandHandler } from '@nestjs/cqrs';
+import { AccountsRepository } from '../billing/accounts.repository';
+import { PLAN_LIMITS, planOf } from '../billing/plan.limits';
 import type { ShareLink } from '../database/schema';
 import { BoardsRepository } from '../kanban/repositories/boards.repository';
 import { CreateShareLinkCommand, RevokeShareLinkCommand } from './share.commands';
@@ -10,6 +12,7 @@ import { ShareLinkRepository } from './share-link.repository';
 export class CreateShareLinkHandler implements ICommandHandler<CreateShareLinkCommand, ShareLink> {
   constructor(
     private readonly boards: BoardsRepository,
+    private readonly accounts: AccountsRepository,
     private readonly shareLinks: ShareLinkRepository,
   ) {}
 
@@ -20,6 +23,10 @@ export class CreateShareLinkHandler implements ICommandHandler<CreateShareLinkCo
     }
     if (board.accountId !== command.accountId) {
       throw new ForbiddenException();
+    }
+    const plan = planOf(await this.accounts.findById(command.accountId));
+    if (!PLAN_LIMITS[plan].guestLinks) {
+      throw new ForbiddenException('Guest links are a Pro feature — upgrade to share boards.');
     }
     return this.shareLinks.create({
       boardId: board.id,

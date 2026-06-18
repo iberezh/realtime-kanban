@@ -1,6 +1,7 @@
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { describe, expect, it, vi } from 'vitest';
-import type { Board, ShareLink } from '../database/schema';
+import type { AccountsRepository } from '../billing/accounts.repository';
+import type { Account, Board, ShareLink } from '../database/schema';
 import type { BoardsRepository } from '../kanban/repositories/boards.repository';
 import { CreateShareLinkHandler, RevokeShareLinkHandler } from './share.command-handlers';
 import { CreateShareLinkCommand, RevokeShareLinkCommand } from './share.commands';
@@ -24,18 +25,21 @@ const link = (): ShareLink => ({
   createdAt: new Date(),
 });
 
-function makeRepos(overrides: { board?: Board | null; link?: ShareLink | null }) {
+function makeRepos(overrides: { board?: Board | null; link?: ShareLink | null; plan?: string }) {
   const create = vi.fn(async () => link());
   const del = vi.fn(async () => true);
   const boards = {
     findById: vi.fn(async () => (overrides.board === undefined ? board() : overrides.board)),
   } as unknown as BoardsRepository;
+  const accounts = {
+    findById: vi.fn(async () => ({ plan: overrides.plan ?? 'pro' }) as Account),
+  } as unknown as AccountsRepository;
   const shareLinks = {
     create,
     delete: del,
     findById: vi.fn(async () => (overrides.link === undefined ? link() : overrides.link)),
   } as unknown as ShareLinkRepository;
-  return { boards, shareLinks, create, del };
+  return { boards, accounts, shareLinks, create, del };
 }
 
 describe('CreateShareLinkHandler', () => {
@@ -44,21 +48,29 @@ describe('CreateShareLinkHandler', () => {
   it('throws NotFound when the board is missing', async () => {
     const r = makeRepos({ board: null });
     await expect(
-      new CreateShareLinkHandler(r.boards, r.shareLinks).execute(cmd),
+      new CreateShareLinkHandler(r.boards, r.accounts, r.shareLinks).execute(cmd),
     ).rejects.toBeInstanceOf(NotFoundException);
   });
 
   it("throws Forbidden for another account's board", async () => {
     const r = makeRepos({ board: board('intruder') });
     await expect(
-      new CreateShareLinkHandler(r.boards, r.shareLinks).execute(cmd),
+      new CreateShareLinkHandler(r.boards, r.accounts, r.shareLinks).execute(cmd),
+    ).rejects.toBeInstanceOf(ForbiddenException);
+    expect(r.create).not.toHaveBeenCalled();
+  });
+
+  it('forbids guest links on the free plan', async () => {
+    const r = makeRepos({ plan: 'free' });
+    await expect(
+      new CreateShareLinkHandler(r.boards, r.accounts, r.shareLinks).execute(cmd),
     ).rejects.toBeInstanceOf(ForbiddenException);
     expect(r.create).not.toHaveBeenCalled();
   });
 
   it('creates a tokened link on the happy path', async () => {
     const r = makeRepos({});
-    await new CreateShareLinkHandler(r.boards, r.shareLinks).execute(cmd);
+    await new CreateShareLinkHandler(r.boards, r.accounts, r.shareLinks).execute(cmd);
     expect(r.create).toHaveBeenCalledWith(
       expect.objectContaining({ boardId: BOARD_ID, createdBy: USER, token: expect.any(String) }),
     );

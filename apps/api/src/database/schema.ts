@@ -16,8 +16,8 @@ export const accounts = pgTable('accounts', {
   id: uuid('id').primaryKey().defaultRandom(),
   name: text('name').notNull(),
   plan: planEnum('plan').notNull().default('free'),
-  lemonCustomerId: text('lemon_customer_id'),
-  lemonSubscriptionId: text('lemon_subscription_id'),
+  stripeCustomerId: text('stripe_customer_id'),
+  stripeSubscriptionId: text('stripe_subscription_id'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 

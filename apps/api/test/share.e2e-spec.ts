@@ -11,6 +11,8 @@ describe('Share links (integration)', () => {
     app = await createTestApp();
     await app.init();
     agent = await authedAgent(app);
+    // Share links are a Pro feature; upgrade (mock checkout) before exercising them.
+    await agent.post('/api/v1/billing/checkout').send({ plan: 'pro' }).expect(200);
   });
 
   afterAll(async () => {

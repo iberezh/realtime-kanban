@@ -7,7 +7,8 @@ import { AppModule } from './app.module';
 import { ConfiguredSocketIoAdapter } from './realtime/socket-io.adapter';
 
 async function bootstrap(): Promise<void> {
-  const app = await NestFactory.create(AppModule);
+  // rawBody lets the Stripe webhook verify its signature over the exact bytes.
+  const app = await NestFactory.create(AppModule, { rawBody: true });
   const config = app.get(ConfigService);
   const corsOrigin = config.getOrThrow<string>('CORS_ORIGIN');
 

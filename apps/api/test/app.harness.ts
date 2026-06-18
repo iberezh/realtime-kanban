@@ -7,7 +7,7 @@ import { AppModule } from '../src/app.module';
 /** Boots the app exactly like main.ts (prefix, cookie parsing, validation) for e2e tests. */
 export async function createTestApp(): Promise<INestApplication> {
   const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
-  const app = moduleRef.createNestApplication();
+  const app = moduleRef.createNestApplication({ rawBody: true });
   app.setGlobalPrefix('api/v1');
   app.use(cookieParser());
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));

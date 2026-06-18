@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
+import { BillingModule } from '../billing/billing.module';
 import { LabelsModule } from '../labels/labels.module';
 import { ActivityProjection } from './activity/activity.projection';
 import { SetCardAssigneeHandler } from './commands/assignee.handlers';
@@ -61,7 +62,7 @@ const queryHandlers = [
 ];
 
 @Module({
-  imports: [CqrsModule, LabelsModule],
+  imports: [CqrsModule, LabelsModule, BillingModule],
   controllers: [
     BoardsController,
     ColumnsController,

@@ -1,5 +1,7 @@
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { CommandHandler, EventBus, type ICommandHandler } from '@nestjs/cqrs';
+import { AccountsRepository } from '../billing/accounts.repository';
+import { PLAN_LIMITS, planOf } from '../billing/plan.limits';
 import type { Label } from '../database/schema';
 import { CreateLabelCommand, DeleteLabelCommand, RenameLabelCommand } from './label.commands';
 import { LabelCreatedEvent, LabelDeletedEvent, LabelRenamedEvent } from './label.events';
@@ -9,9 +11,14 @@ import { LabelsRepository } from './labels.repository';
 export class CreateLabelHandler implements ICommandHandler<CreateLabelCommand, Label> {
   constructor(
     private readonly labels: LabelsRepository,
+    private readonly accounts: AccountsRepository,
     private readonly eventBus: EventBus,
   ) {}
   async execute(command: CreateLabelCommand): Promise<Label> {
+    const plan = planOf(await this.accounts.findById(command.accountId));
+    if (!PLAN_LIMITS[plan].customLabels) {
+      throw new ForbiddenException('Custom labels are a Pro feature — upgrade to create labels.');
+    }
     const label = await this.labels.create({
       accountId: command.accountId,
       name: command.name,

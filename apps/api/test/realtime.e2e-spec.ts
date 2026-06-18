@@ -32,6 +32,8 @@ describe('Realtime gateway (integration)', () => {
     await app.listen(0);
     url = await app.getUrl();
     agent = await authedAgent(app);
+    // Pro plan so the guest:join test can mint a share link.
+    await agent.post('/api/v1/billing/checkout').send({ plan: 'pro' }).expect(200);
 
     const { body } = await agent
       .post('/api/v1/boards')

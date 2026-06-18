@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { desc, eq } from 'drizzle-orm';
+import { and, desc, eq, gte } from 'drizzle-orm';
 import { type Database, DRIZZLE } from '../../database/database.module';
 import { type Activity, activity } from '../../database/schema';
 
@@ -18,11 +18,14 @@ export class ActivityRepository {
     await this.db.insert(activity).values(row);
   }
 
-  async listByBoard(boardId: string, limit = 50): Promise<Activity[]> {
+  async listByBoard(boardId: string, limit = 50, since?: Date): Promise<Activity[]> {
+    const conditions = since
+      ? and(eq(activity.boardId, boardId), gte(activity.createdAt, since))
+      : eq(activity.boardId, boardId);
     return this.db
       .select()
       .from(activity)
-      .where(eq(activity.boardId, boardId))
+      .where(conditions)
       .orderBy(desc(activity.createdAt))
       .limit(limit);
   }
