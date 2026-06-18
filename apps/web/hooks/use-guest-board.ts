@@ -6,8 +6,6 @@ import { getSocket } from '@/lib/socket';
 import { isWireEvent, type Member } from '@/lib/types';
 import { useBoardStore } from '@/stores/board-store';
 
-const GUEST = { name: 'Guest', color: '#7c5cff' };
-
 /** Resolves a share token, then joins the board room as an anonymous read-only viewer. */
 export function useGuestBoard(token: string): { loading: boolean; error: string | null } {
   const [loading, setLoading] = useState(true);
@@ -19,14 +17,13 @@ export function useGuestBoard(token: string): { loading: boolean; error: string 
     let boardId: string | null = null;
     const socket = getSocket();
 
+    // Join by token, never by a client-supplied boardId — the server validates it.
     const join = (): void => {
-      if (boardId) {
-        socket.emit(
-          'board:join',
-          { boardId, ...GUEST },
-          (ack: { members: Member[] }) => active && setMembers(ack.members),
-        );
-      }
+      socket.emit(
+        'guest:join',
+        { token },
+        (ack: { members: Member[] }) => active && setMembers(ack.members),
+      );
     };
     const onEvent = (event: unknown): void => {
       if (isWireEvent(event) && event.boardId === boardId) {
@@ -45,6 +42,8 @@ export function useGuestBoard(token: string): { loading: boolean; error: string 
           return;
         }
         boardId = view.id;
+        // Labels are shared so chips render; account members are deliberately
+        // not loaded, so guests never see assignee identities.
         setLabels(view.labels);
         setView(view);
         setLoading(false);

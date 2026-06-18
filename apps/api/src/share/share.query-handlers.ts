@@ -7,7 +7,11 @@ import { CardLabelsRepository } from '../kanban/repositories/card-labels.reposit
 import { CardsRepository } from '../kanban/repositories/cards.repository';
 import { ColumnsRepository } from '../kanban/repositories/columns.repository';
 import { LabelsRepository } from '../labels/labels.repository';
-import { ListBoardShareLinksQuery, ResolveShareLinkQuery } from './share.queries';
+import {
+  BoardIdForShareTokenQuery,
+  ListBoardShareLinksQuery,
+  ResolveShareLinkQuery,
+} from './share.queries';
 import type { SharedBoardView } from './share.views';
 import { ShareLinkRepository } from './share-link.repository';
 
@@ -49,12 +53,27 @@ export class ResolveShareLinkHandler
     if (!board) {
       throw new NotFoundException('This share link is no longer active');
     }
-    const [cols, cards, cardLabelIds, labels] = await Promise.all([
+    const [cols, cards, cardLabelIds, accountLabels] = await Promise.all([
       this.columns.listByBoard(board.id),
       this.cards.listByBoard(board.id),
       this.cardLabels.labelIdsByBoard(board.id),
       this.labels.listByAccount(board.accountId),
     ]);
+    // Expose only the labels this board actually uses, not the whole account's set.
+    const used = new Set([...cardLabelIds.values()].flat());
+    const labels = accountLabels.filter((label) => used.has(label.id));
     return { ...assembleBoardView(board, cols, cards, cardLabelIds), labels };
+  }
+}
+
+@QueryHandler(BoardIdForShareTokenQuery)
+export class BoardIdForShareTokenHandler
+  implements IQueryHandler<BoardIdForShareTokenQuery, string | null>
+{
+  constructor(private readonly shareLinks: ShareLinkRepository) {}
+
+  async execute(query: BoardIdForShareTokenQuery): Promise<string | null> {
+    const link = await this.shareLinks.findByToken(query.token);
+    return link?.boardId ?? null;
   }
 }

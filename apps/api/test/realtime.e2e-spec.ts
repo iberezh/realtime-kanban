@@ -85,4 +85,24 @@ describe('Realtime gateway (integration)', () => {
     socket.emit('board:join', { boardId: 'not-a-uuid', name: '', color: 'nope' });
     expect(await error).toBeDefined();
   });
+
+  it('admits a guest to the room through a valid share token', async () => {
+    const { body: shareLink } = await agent
+      .post(`/api/v1/boards/${boardId}/share-links`)
+      .expect(201);
+    const guest = await connect();
+    const ack = (await guest.emitWithAck('guest:join', { token: shareLink.token })) as {
+      boardId: string;
+      members: PresenceState['members'];
+    };
+    expect(ack.boardId).toBe(boardId);
+    expect(ack.members.some((member) => member.name === 'Guest')).toBe(true);
+  });
+
+  it('rejects guest:join with an unknown token', async () => {
+    const socket = await connect();
+    const error = waitFor(socket, 'exception');
+    socket.emit('guest:join', { token: 'not-a-real-token' });
+    expect(await error).toBeDefined();
+  });
 });

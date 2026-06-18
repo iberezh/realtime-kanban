@@ -4,7 +4,11 @@ import { KanbanModule } from '../kanban/kanban.module';
 import { LabelsModule } from '../labels/labels.module';
 import { PublicShareController } from './public-share.controller';
 import { CreateShareLinkHandler, RevokeShareLinkHandler } from './share.command-handlers';
-import { ListBoardShareLinksHandler, ResolveShareLinkHandler } from './share.query-handlers';
+import {
+  BoardIdForShareTokenHandler,
+  ListBoardShareLinksHandler,
+  ResolveShareLinkHandler,
+} from './share.query-handlers';
 import { ShareLinkRepository } from './share-link.repository';
 import { ShareLinksController } from './share-links.controller';
 
@@ -17,6 +21,7 @@ import { ShareLinksController } from './share-links.controller';
     RevokeShareLinkHandler,
     ListBoardShareLinksHandler,
     ResolveShareLinkHandler,
+    BoardIdForShareTokenHandler,
   ],
 })
 export class ShareModule {}

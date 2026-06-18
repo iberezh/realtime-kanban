@@ -8,3 +8,8 @@ export class ListBoardShareLinksQuery {
 export class ResolveShareLinkQuery {
   constructor(public readonly token: string) {}
 }
+
+/** Resolves a share token to its board id for the realtime guest-join path. */
+export class BoardIdForShareTokenQuery {
+  constructor(public readonly token: string) {}
+}

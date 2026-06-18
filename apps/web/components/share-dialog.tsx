@@ -2,6 +2,7 @@
 
 import {
   ActionIcon,
+  Alert,
   Button,
   CopyButton,
   Group,
@@ -26,6 +27,7 @@ interface ShareDialogProps {
 export function ShareDialog({ boardId, opened, onClose }: ShareDialogProps) {
   const [links, setLinks] = useState<ShareLink[]>([]);
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!opened) {
@@ -43,16 +45,24 @@ export function ShareDialog({ boardId, opened, onClose }: ShareDialogProps) {
 
   const create = async (): Promise<void> => {
     setBusy(true);
+    setError(null);
     try {
       const link = await createShareLink(boardId);
       setLinks((prev) => [link, ...prev]);
+    } catch {
+      setError('Could not create a share link. Try again.');
     } finally {
       setBusy(false);
     }
   };
+  // Only drop the link from the UI once the server confirms it is gone.
   const revoke = async (id: string): Promise<void> => {
-    await revokeShareLink(id).catch(() => undefined);
-    setLinks((prev) => prev.filter((link) => link.id !== id));
+    try {
+      await revokeShareLink(id);
+      setLinks((prev) => prev.filter((link) => link.id !== id));
+    } catch {
+      setError('Could not revoke that link — it may still be active.');
+    }
   };
 
   return (
@@ -64,6 +74,11 @@ export function ShareDialog({ boardId, opened, onClose }: ShareDialogProps) {
         <Button onClick={create} loading={busy}>
           Create share link
         </Button>
+        {error && (
+          <Alert color="red" variant="light">
+            {error}
+          </Alert>
+        )}
         {links.length === 0 ? (
           <Text size="xs" c="dimmed">
             No active links yet.
