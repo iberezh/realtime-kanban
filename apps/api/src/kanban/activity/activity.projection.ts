@@ -1,7 +1,6 @@
 import { EventsHandler, type IEventHandler } from '@nestjs/cqrs';
 import {
   BoardCreatedEvent,
-  BoardDeletedEvent,
   BoardRenamedEvent,
   CardAssigneeChangedEvent,
   CardCreatedEvent,
@@ -17,10 +16,12 @@ import {
 } from '../events/kanban.events';
 import { ActivityRepository } from '../repositories/activity.repository';
 
+// BoardDeletedEvent is intentionally not projected: activity is board-scoped and
+// cascade-deleted with the board, so a deletion row would be orphaned at once and
+// would violate the activity → boards foreign key.
 type DomainEvent =
   | BoardCreatedEvent
   | BoardRenamedEvent
-  | BoardDeletedEvent
   | ColumnCreatedEvent
   | ColumnRenamedEvent
   | ColumnMovedEvent
@@ -34,16 +35,15 @@ type DomainEvent =
   | CardAssigneeChangedEvent;
 
 function getBoardId(event: DomainEvent): string {
-  if (event instanceof BoardCreatedEvent || event instanceof BoardRenamedEvent)
+  if (event instanceof BoardCreatedEvent || event instanceof BoardRenamedEvent) {
     return event.board.id;
-  if (event instanceof BoardDeletedEvent) return event.boardId;
+  }
   return event.boardId;
 }
 
 @EventsHandler(
   BoardCreatedEvent,
   BoardRenamedEvent,
-  BoardDeletedEvent,
   ColumnCreatedEvent,
   ColumnRenamedEvent,
   ColumnMovedEvent,
