@@ -5,19 +5,32 @@ import { useState } from 'react';
 import { addChecklistItem, deleteChecklistItem, updateChecklistItem } from '@/lib/checklist-api';
 import type { Card } from '@/lib/types';
 
+const FAILED = 'Something went wrong — try again.';
+
 /** Card checklist: add, toggle, and remove items; all changes round-trip through realtime. */
 export function CardChecklist({ card }: { card: Card }) {
   const [text, setText] = useState('');
+  const [error, setError] = useState<string | null>(null);
   const items = card.checklist;
   const done = items.filter((item) => item.done).length;
+
+  // Surface failures instead of swallowing them; the store updates on the realtime echo.
+  const run = (op: Promise<unknown>): void => {
+    void op.then(() => setError(null)).catch(() => setError(FAILED));
+  };
 
   const add = async (): Promise<void> => {
     const value = text.trim();
     if (!value) {
       return;
     }
-    setText('');
-    await addChecklistItem(card.id, value).catch(() => undefined);
+    try {
+      await addChecklistItem(card.id, value);
+      setText('');
+      setError(null);
+    } catch {
+      setError(FAILED);
+    }
   };
 
   return (
@@ -41,9 +54,7 @@ export function CardChecklist({ card }: { card: Card }) {
             size="xs"
             checked={item.done}
             onChange={(event) =>
-              void updateChecklistItem(item.id, { done: event.currentTarget.checked }).catch(
-                () => undefined,
-              )
+              run(updateChecklistItem(item.id, { done: event.currentTarget.checked }))
             }
           />
           <Text size="sm" flex={1} {...(item.done ? { td: 'line-through', c: 'dimmed' } : {})}>
@@ -54,7 +65,7 @@ export function CardChecklist({ card }: { card: Card }) {
             variant="subtle"
             color="red"
             aria-label="Delete item"
-            onClick={() => void deleteChecklistItem(item.id).catch(() => undefined)}
+            onClick={() => run(deleteChecklistItem(item.id))}
           >
             ×
           </ActionIcon>
@@ -72,6 +83,11 @@ export function CardChecklist({ card }: { card: Card }) {
           }
         }}
       />
+      {error && (
+        <Text size="xs" c="red">
+          {error}
+        </Text>
+      )}
     </Stack>
   );
 }
