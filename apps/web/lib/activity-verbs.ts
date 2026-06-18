@@ -6,6 +6,7 @@ const VERBS: Record<string, string> = {
   ColumnCreatedEvent: 'added a column',
   ColumnRenamedEvent: 'renamed a column',
   ColumnMovedEvent: 'moved a column',
+  ColumnUpdatedEvent: 'updated a column',
   ColumnDeletedEvent: 'removed a column',
   CardCreatedEvent: 'added a card',
   CardUpdatedEvent: 'updated a card',

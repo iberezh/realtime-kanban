@@ -6,6 +6,7 @@ import {
   ColumnDeletedEvent,
   ColumnMovedEvent,
   ColumnRenamedEvent,
+  ColumnUpdatedEvent,
 } from '../events/kanban.events';
 import { placementBefore } from '../ranking/placement';
 import { rankBetween } from '../ranking/rank';
@@ -16,6 +17,7 @@ import {
   DeleteColumnCommand,
   MoveColumnCommand,
   RenameColumnCommand,
+  SetColumnWipLimitCommand,
 } from './column.commands';
 
 @CommandHandler(CreateColumnCommand)
@@ -110,5 +112,28 @@ export class DeleteColumnHandler implements ICommandHandler<DeleteColumnCommand,
 
     await this.columns.delete(column.id);
     this.eventBus.publish(new ColumnDeletedEvent(column.boardId, column.id, command.actorId));
+  }
+}
+
+@CommandHandler(SetColumnWipLimitCommand)
+export class SetColumnWipLimitHandler implements ICommandHandler<SetColumnWipLimitCommand, Column> {
+  constructor(
+    private readonly boards: BoardsRepository,
+    private readonly columns: ColumnsRepository,
+    private readonly eventBus: EventBus,
+  ) {}
+
+  async execute(command: SetColumnWipLimitCommand): Promise<Column> {
+    const existing = await this.columns.findById(command.columnId);
+    if (!existing) throw new NotFoundException(`Column ${command.columnId} not found`);
+
+    const board = await this.boards.findById(existing.boardId);
+    if (!board || board.accountId !== command.accountId) throw new ForbiddenException();
+
+    const column = await this.columns.setWipLimit(command.columnId, command.wipLimit);
+    if (!column) throw new NotFoundException(`Column ${command.columnId} not found`);
+
+    this.eventBus.publish(new ColumnUpdatedEvent(column.boardId, column, command.actorId));
+    return column;
   }
 }

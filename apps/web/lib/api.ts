@@ -15,6 +15,7 @@ export const ENDPOINTS = {
   boardColumns: (boardId: string) => `/boards/${boardId}/columns`,
   column: (columnId: string) => `/columns/${columnId}`,
   columnMove: (columnId: string) => `/columns/${columnId}/move`,
+  columnWipLimit: (columnId: string) => `/columns/${columnId}/wip-limit`,
   columnCards: (columnId: string) => `/columns/${columnId}/cards`,
   card: (cardId: string) => `/cards/${cardId}`,
   cardMove: (cardId: string) => `/cards/${cardId}/move`,
@@ -88,6 +89,12 @@ export const renameColumn = (columnId: string, title: string): Promise<Column> =
 
 export const deleteColumn = (columnId: string): Promise<void> =>
   api(ENDPOINTS.column(columnId), { method: 'DELETE' });
+
+export const setColumnWipLimit = (columnId: string, wipLimit: number | null): Promise<Column> =>
+  api(ENDPOINTS.columnWipLimit(columnId), {
+    method: 'PATCH',
+    body: JSON.stringify({ wipLimit }),
+  });
 
 export const createCard = (columnId: string, title: string, description?: string): Promise<Card> =>
   api(ENDPOINTS.columnCards(columnId), {

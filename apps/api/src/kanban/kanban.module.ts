@@ -21,6 +21,7 @@ import {
   DeleteColumnHandler,
   MoveColumnHandler,
   RenameColumnHandler,
+  SetColumnWipLimitHandler,
 } from './commands/column.handlers';
 import { ActivityController } from './controllers/activity.controller';
 import { BoardsController } from './controllers/boards.controller';
@@ -45,6 +46,7 @@ const commandHandlers = [
   RenameColumnHandler,
   MoveColumnHandler,
   DeleteColumnHandler,
+  SetColumnWipLimitHandler,
   CreateCardHandler,
   UpdateCardHandler,
   MoveCardHandler,

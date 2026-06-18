@@ -46,6 +46,13 @@ export class ColumnDeletedEvent {
     public readonly actorId: string,
   ) {}
 }
+export class ColumnUpdatedEvent {
+  constructor(
+    public readonly boardId: string,
+    public readonly column: Column,
+    public readonly actorId: string,
+  ) {}
+}
 export class CardCreatedEvent {
   constructor(
     public readonly boardId: string,

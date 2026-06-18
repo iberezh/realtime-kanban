@@ -1,5 +1,6 @@
 import {
   index,
+  integer,
   jsonb,
   pgEnum,
   pgTable,
@@ -85,6 +86,7 @@ export const columns = pgTable(
       .references(() => boards.id, { onDelete: 'cascade' }),
     title: text('title').notNull(),
     rank: text('rank').notNull(),
+    wipLimit: integer('wip_limit'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [index('columns_board_rank_idx').on(table.boardId, table.rank)],

@@ -2,22 +2,27 @@
 
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { ActionIcon, Group, Menu, Paper, Stack, Text } from '@mantine/core';
+import { ActionIcon, Box, Group, Menu, Paper, Stack, Text } from '@mantine/core';
+import { useState } from 'react';
 import { createCard, deleteColumn } from '@/lib/api';
 import type { Card, ColumnView as ColumnViewType } from '@/lib/types';
 import { InlineAdd } from './inline-add';
+import { SetWipModal } from './set-wip-modal';
 import { SortableCard } from './sortable-card';
 
 interface ColumnViewProps {
   column: ColumnViewType;
   onOpenCard: (card: Card) => void;
+  cardMatches?: (card: Card) => boolean;
 }
 
-export function ColumnView({ column, onOpenCard }: ColumnViewProps) {
+export function ColumnView({ column, onOpenCard, cardMatches }: ColumnViewProps) {
+  const [wipOpen, setWipOpen] = useState(false);
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: column.id,
     data: { column },
   });
+  const overLimit = column.wipLimit !== null && column.cards.length > column.wipLimit;
 
   return (
     <Paper
@@ -45,8 +50,14 @@ export function ColumnView({ column, onOpenCard }: ColumnViewProps) {
             {...listeners}
           >
             {column.title}
-            <Text component="span" c="dimmed" ml={6}>
+            <Text
+              component="span"
+              c={overLimit ? 'red' : 'dimmed'}
+              fw={overLimit ? 700 : 400}
+              ml={6}
+            >
               {column.cards.length}
+              {column.wipLimit !== null && ` / ${column.wipLimit}`}
             </Text>
           </Text>
           <Menu position="bottom-end" withArrow>
@@ -56,19 +67,29 @@ export function ColumnView({ column, onOpenCard }: ColumnViewProps) {
               </ActionIcon>
             </Menu.Target>
             <Menu.Dropdown>
+              <Menu.Item onClick={() => setWipOpen(true)}>Set WIP limit…</Menu.Item>
               <Menu.Item color="red" onClick={() => void deleteColumn(column.id)}>
                 Delete column
               </Menu.Item>
             </Menu.Dropdown>
           </Menu>
+          <SetWipModal
+            columnId={column.id}
+            current={column.wipLimit}
+            opened={wipOpen}
+            onClose={() => setWipOpen(false)}
+          />
         </Group>
         <SortableContext
           items={column.cards.map((card) => card.id)}
           strategy={verticalListSortingStrategy}
         >
+          {/* Keep every card in the sortable registry; filtering only hides them visually. */}
           <Stack gap="xs" mih={8}>
             {column.cards.map((card) => (
-              <SortableCard key={card.id} card={card} onOpen={onOpenCard} />
+              <Box key={card.id} display={cardMatches && !cardMatches(card) ? 'none' : undefined}>
+                <SortableCard card={card} onOpen={onOpenCard} />
+              </Box>
             ))}
           </Stack>
         </SortableContext>

@@ -27,8 +27,9 @@ import {
   DeleteColumnCommand,
   MoveColumnCommand,
   RenameColumnCommand,
+  SetColumnWipLimitCommand,
 } from '../commands/column.commands';
-import { CreateColumnDto, MoveColumnDto, RenameColumnDto } from '../dto/column.dto';
+import { CreateColumnDto, MoveColumnDto, RenameColumnDto, SetWipLimitDto } from '../dto/column.dto';
 
 @ApiTags('columns')
 @ApiCookieAuth()
@@ -58,6 +59,18 @@ export class ColumnsController {
   ): Promise<Column> {
     return this.commandBus.execute(
       new RenameColumnCommand(id, dto.title, ctx.accountId, ctx.userId),
+    );
+  }
+
+  @Patch('columns/:id/wip-limit')
+  @ApiOkResponse({ description: 'The column with its updated WIP limit.' })
+  setWipLimit(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: SetWipLimitDto,
+    @CurrentUser() ctx: AuthContext,
+  ): Promise<Column> {
+    return this.commandBus.execute(
+      new SetColumnWipLimitCommand(id, dto.wipLimit ?? null, ctx.accountId, ctx.userId),
     );
   }
 

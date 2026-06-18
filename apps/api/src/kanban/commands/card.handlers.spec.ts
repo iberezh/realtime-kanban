@@ -17,6 +17,7 @@ const column = (id: string, boardId = 'board-1'): Column => ({
   boardId,
   title: id,
   rank: 'm',
+  wipLimit: null,
   createdAt: new Date(),
 });
 

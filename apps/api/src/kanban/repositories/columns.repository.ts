@@ -71,6 +71,15 @@ export class ColumnsRepository {
     return column ?? null;
   }
 
+  async setWipLimit(id: string, wipLimit: number | null): Promise<Column | null> {
+    const [column] = await this.db
+      .update(columns)
+      .set({ wipLimit })
+      .where(eq(columns.id, id))
+      .returning();
+    return column ?? null;
+  }
+
   async delete(id: string): Promise<boolean> {
     const deleted = await this.db
       .delete(columns)
