@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { asc, eq } from 'drizzle-orm';
 import { type Database, DRIZZLE } from '../../database/database.module';
-import { type Board, boards } from '../../database/schema';
+import { type Board, boards, columns } from '../../database/schema';
 
 @Injectable()
 export class BoardsRepository {
@@ -16,6 +16,16 @@ export class BoardsRepository {
   async findById(id: string): Promise<Board | null> {
     const [board] = await this.db.select().from(boards).where(eq(boards.id, id));
     return board ?? null;
+  }
+
+  async findByColumnId(columnId: string): Promise<Board | null> {
+    const [row] = await this.db
+      .select({ board: boards })
+      .from(boards)
+      .innerJoin(columns, eq(columns.boardId, boards.id))
+      .where(eq(columns.id, columnId))
+      .limit(1);
+    return row?.board ?? null;
   }
 
   async listByAccount(accountId: string): Promise<Board[]> {

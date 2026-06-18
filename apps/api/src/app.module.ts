@@ -5,6 +5,7 @@ import { validateEnv } from './config/env.validation';
 import { DatabaseModule } from './database/database.module';
 import { HealthModule } from './health/health.module';
 import { KanbanModule } from './kanban/kanban.module';
+import { LabelsModule } from './labels/labels.module';
 import { RealtimeModule } from './realtime/realtime.module';
 
 @Module({
@@ -18,6 +19,7 @@ import { RealtimeModule } from './realtime/realtime.module';
     AuthModule,
     HealthModule,
     KanbanModule,
+    LabelsModule,
     RealtimeModule,
   ],
 })

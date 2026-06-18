@@ -45,7 +45,7 @@ export class BoardsController {
   @Post()
   @ApiCreatedResponse({ description: 'The created board.' })
   create(@Body() dto: CreateBoardDto, @CurrentUser() ctx: AuthContext): Promise<Board> {
-    return this.commandBus.execute(new CreateBoardCommand(dto.title, ctx.accountId));
+    return this.commandBus.execute(new CreateBoardCommand(dto.title, ctx.accountId, ctx.userId));
   }
 
   @Get()
@@ -67,13 +67,15 @@ export class BoardsController {
     @Body() dto: RenameBoardDto,
     @CurrentUser() ctx: AuthContext,
   ): Promise<Board> {
-    return this.commandBus.execute(new RenameBoardCommand(id, dto.title, ctx.accountId));
+    return this.commandBus.execute(
+      new RenameBoardCommand(id, dto.title, ctx.accountId, ctx.userId),
+    );
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiNoContentResponse({ description: 'Board deleted with all its columns and cards.' })
   remove(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() ctx: AuthContext): Promise<void> {
-    return this.commandBus.execute(new DeleteBoardCommand(id, ctx.accountId));
+    return this.commandBus.execute(new DeleteBoardCommand(id, ctx.accountId, ctx.userId));
   }
 }

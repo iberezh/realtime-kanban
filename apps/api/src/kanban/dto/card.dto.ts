@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty, IsOptional, IsString, IsUUID, MaxLength } from 'class-validator';
+import { IsISO8601, IsNotEmpty, IsOptional, IsString, IsUUID, MaxLength } from 'class-validator';
 
 export class CreateCardDto {
   @ApiProperty({ example: 'Fix login flow', maxLength: 200 })
@@ -28,6 +28,11 @@ export class UpdateCardDto {
   @IsString()
   @MaxLength(5000)
   description?: string;
+
+  @ApiPropertyOptional({ example: '2026-12-31T00:00:00Z', nullable: true })
+  @IsOptional()
+  @IsISO8601({ strict: true })
+  dueAt?: string | null;
 }
 
 export class MoveCardDto {
@@ -42,4 +47,18 @@ export class MoveCardDto {
   @IsOptional()
   @IsUUID()
   beforeCardId?: string;
+}
+
+export class AttachLabelDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  labelId!: string;
+}
+
+export class SetAssigneeDto {
+  @ApiPropertyOptional({ nullable: true })
+  @IsOptional()
+  @IsString()
+  assigneeId?: string | null;
 }

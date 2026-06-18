@@ -10,6 +10,7 @@ import { MoveCardCommand } from './card.commands';
 import { MoveCardHandler } from './card.handlers';
 
 const ACCOUNT = 'acct-1';
+const ACTOR = 'actor-1';
 
 const column = (id: string, boardId = 'board-1'): Column => ({
   id,
@@ -31,6 +32,8 @@ const card = (id: string, columnId: string, rank: string): Card => ({
   columnId,
   title: id,
   description: null,
+  assigneeId: null,
+  dueAt: null,
   rank,
   createdAt: new Date(),
   updatedAt: new Date(),
@@ -73,7 +76,9 @@ function setup(overrides: { targetBoard?: string; boardAccount?: string } = {}):
 describe('MoveCardHandler', () => {
   it('moves a card before another and publishes CardMovedEvent', async () => {
     const { handler, publish, move } = setup();
-    const moved = await handler.execute(new MoveCardCommand('moving', 'col-b', 'y', ACCOUNT));
+    const moved = await handler.execute(
+      new MoveCardCommand('moving', 'col-b', 'y', ACCOUNT, ACTOR),
+    );
 
     const [, , rank] = move.mock.calls[0] as [string, string, string];
     expect(rank > 'g' && rank < 'q').toBe(true);
@@ -83,7 +88,7 @@ describe('MoveCardHandler', () => {
 
   it('moves a card to the end when beforeCardId is null', async () => {
     const { handler, move } = setup();
-    await handler.execute(new MoveCardCommand('moving', 'col-b', null, ACCOUNT));
+    await handler.execute(new MoveCardCommand('moving', 'col-b', null, ACCOUNT, ACTOR));
 
     const [, , rank] = move.mock.calls[0] as [string, string, string];
     expect(rank > 'q').toBe(true);
@@ -92,21 +97,21 @@ describe('MoveCardHandler', () => {
   it('rejects an unknown beforeCardId', async () => {
     const { handler } = setup();
     await expect(
-      handler.execute(new MoveCardCommand('moving', 'col-b', 'missing', ACCOUNT)),
+      handler.execute(new MoveCardCommand('moving', 'col-b', 'missing', ACCOUNT, ACTOR)),
     ).rejects.toBeInstanceOf(BadRequestException);
   });
 
   it('rejects moves across boards', async () => {
     const { handler } = setup({ targetBoard: 'board-2' });
     await expect(
-      handler.execute(new MoveCardCommand('moving', 'col-b', null, ACCOUNT)),
+      handler.execute(new MoveCardCommand('moving', 'col-b', null, ACCOUNT, ACTOR)),
     ).rejects.toBeInstanceOf(BadRequestException);
   });
 
-  it('rejects a move onto another account’s board', async () => {
+  it("rejects a move onto another account's board", async () => {
     const { handler, move } = setup({ boardAccount: 'intruder' });
     await expect(
-      handler.execute(new MoveCardCommand('moving', 'col-b', null, ACCOUNT)),
+      handler.execute(new MoveCardCommand('moving', 'col-b', null, ACCOUNT, ACTOR)),
     ).rejects.toBeInstanceOf(ForbiddenException);
     expect(move).not.toHaveBeenCalled();
   });
@@ -120,7 +125,7 @@ describe('MoveCardHandler', () => {
       { publish: vi.fn() } as unknown as EventBus,
     );
     await expect(
-      handler.execute(new MoveCardCommand('ghost', 'col-b', null, ACCOUNT)),
+      handler.execute(new MoveCardCommand('ghost', 'col-b', null, ACCOUNT, ACTOR)),
     ).rejects.toBeInstanceOf(NotFoundException);
   });
 });

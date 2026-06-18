@@ -14,6 +14,8 @@ export interface NewCard {
 export interface CardPatch {
   title?: string;
   description?: string | null;
+  dueAt?: Date | null;
+  assigneeId?: string | null;
 }
 
 @Injectable()

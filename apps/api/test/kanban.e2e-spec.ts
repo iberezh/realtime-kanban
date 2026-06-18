@@ -1,21 +1,16 @@
 import type { INestApplication } from '@nestjs/common';
-import { ValidationPipe } from '@nestjs/common';
-import { Test } from '@nestjs/testing';
-import request from 'supertest';
+import type request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { AppModule } from '../src/app.module';
+import { authedAgent, createTestApp } from './app.harness';
 
 describe('Kanban API (integration)', () => {
   let app: INestApplication;
-  let http: ReturnType<typeof request>;
+  let agent: ReturnType<typeof request.agent>;
 
   beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
-    app = moduleRef.createNestApplication();
-    app.setGlobalPrefix('api/v1');
-    app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+    app = await createTestApp();
     await app.init();
-    http = request(app.getHttpServer());
+    agent = await authedAgent(app);
   });
 
   afterAll(async () => {
@@ -23,50 +18,50 @@ describe('Kanban API (integration)', () => {
   });
 
   it('runs the full board lifecycle', async () => {
-    const { body: board } = await http
+    const { body: board } = await agent
       .post('/api/v1/boards')
       .send({ title: 'Integration board' })
       .expect(201);
 
-    const { body: todo } = await http
+    const { body: todo } = await agent
       .post(`/api/v1/boards/${board.id}/columns`)
       .send({ title: 'Todo' })
       .expect(201);
-    const { body: doing } = await http
+    const { body: doing } = await agent
       .post(`/api/v1/boards/${board.id}/columns`)
       .send({ title: 'Doing' })
       .expect(201);
 
-    const { body: cardA } = await http
+    const { body: cardA } = await agent
       .post(`/api/v1/columns/${todo.id}/cards`)
       .send({ title: 'A' })
       .expect(201);
-    const { body: cardB } = await http
+    const { body: cardB } = await agent
       .post(`/api/v1/columns/${todo.id}/cards`)
       .send({ title: 'B' })
       .expect(201);
 
     // Move B into Doing, then A before B — final order in Doing: [A, B].
-    await http.post(`/api/v1/cards/${cardB.id}/move`).send({ toColumnId: doing.id }).expect(200);
-    await http
+    await agent.post(`/api/v1/cards/${cardB.id}/move`).send({ toColumnId: doing.id }).expect(200);
+    await agent
       .post(`/api/v1/cards/${cardA.id}/move`)
       .send({ toColumnId: doing.id, beforeCardId: cardB.id })
       .expect(200);
 
-    const { body: view } = await http.get(`/api/v1/boards/${board.id}`).expect(200);
+    const { body: view } = await agent.get(`/api/v1/boards/${board.id}`).expect(200);
     const doingColumn = view.columns.find((column: { id: string }) => column.id === doing.id);
     expect(doingColumn.cards.map((card: { title: string }) => card.title)).toEqual(['A', 'B']);
     const todoColumn = view.columns.find((column: { id: string }) => column.id === todo.id);
     expect(todoColumn.cards).toHaveLength(0);
 
     // Validation guardrails.
-    await http.post('/api/v1/boards').send({ title: '' }).expect(400);
-    await http
+    await agent.post('/api/v1/boards').send({ title: '' }).expect(400);
+    await agent
       .post(`/api/v1/cards/${cardA.id}/move`)
       .send({ toColumnId: doing.id, beforeCardId: cardA.id })
       .expect(400);
 
-    await http.delete(`/api/v1/boards/${board.id}`).expect(204);
-    await http.get(`/api/v1/boards/${board.id}`).expect(404);
+    await agent.delete(`/api/v1/boards/${board.id}`).expect(204);
+    await agent.get(`/api/v1/boards/${board.id}`).expect(404);
   });
 });

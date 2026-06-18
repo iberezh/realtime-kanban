@@ -37,9 +37,40 @@ export interface Card {
   columnId: string;
   title: string;
   description: string | null;
+  assigneeId: string | null;
+  dueAt: string | null;
   rank: string;
   createdAt: string;
   updatedAt: string;
+  labelIds: string[];
+}
+
+/** The card shape on the wire: a raw DB row, without the joined `labelIds`. */
+export type WireCard = Omit<Card, 'labelIds'>;
+
+export interface Label {
+  id: string;
+  accountId: string;
+  name: string;
+  color: string;
+  createdAt: string;
+}
+
+/** A workspace member (distinct from {@link Member}, which is live socket presence). */
+export interface AccountMember {
+  userId: string;
+  name: string;
+  color: string;
+  role: 'owner' | 'member';
+}
+
+export interface ActivityEntry {
+  id: string;
+  boardId: string;
+  actorId: string | null;
+  type: string;
+  data: Record<string, unknown>;
+  createdAt: string;
 }
 
 export interface ColumnView extends Column {
@@ -68,10 +99,13 @@ export type WireEvent =
   | { type: 'column.renamed'; boardId: string; column: Column }
   | { type: 'column.moved'; boardId: string; column: Column }
   | { type: 'column.deleted'; boardId: string; columnId: string }
-  | { type: 'card.created'; boardId: string; card: Card }
-  | { type: 'card.updated'; boardId: string; card: Card }
-  | { type: 'card.moved'; boardId: string; card: Card }
-  | { type: 'card.deleted'; boardId: string; columnId: string; cardId: string };
+  | { type: 'card.created'; boardId: string; card: WireCard }
+  | { type: 'card.updated'; boardId: string; card: WireCard }
+  | { type: 'card.moved'; boardId: string; card: WireCard }
+  | { type: 'card.deleted'; boardId: string; columnId: string; cardId: string }
+  | { type: 'card.label_attached'; boardId: string; cardId: string; labelId: string }
+  | { type: 'card.label_detached'; boardId: string; cardId: string; labelId: string }
+  | { type: 'card.assignee_changed'; boardId: string; card: WireCard };
 
 const WIRE_TYPES: ReadonlySet<string> = new Set([
   'board.renamed',
@@ -84,6 +118,9 @@ const WIRE_TYPES: ReadonlySet<string> = new Set([
   'card.updated',
   'card.moved',
   'card.deleted',
+  'card.label_attached',
+  'card.label_detached',
+  'card.assignee_changed',
 ]);
 
 /** Socket payloads arrive untyped — gate them before they reach the store. */

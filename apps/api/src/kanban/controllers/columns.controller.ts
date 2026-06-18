@@ -44,7 +44,9 @@ export class ColumnsController {
     @Body() dto: CreateColumnDto,
     @CurrentUser() ctx: AuthContext,
   ): Promise<Column> {
-    return this.commandBus.execute(new CreateColumnCommand(boardId, dto.title, ctx.accountId));
+    return this.commandBus.execute(
+      new CreateColumnCommand(boardId, dto.title, ctx.accountId, ctx.userId),
+    );
   }
 
   @Patch('columns/:id')
@@ -54,7 +56,9 @@ export class ColumnsController {
     @Body() dto: RenameColumnDto,
     @CurrentUser() ctx: AuthContext,
   ): Promise<Column> {
-    return this.commandBus.execute(new RenameColumnCommand(id, dto.title, ctx.accountId));
+    return this.commandBus.execute(
+      new RenameColumnCommand(id, dto.title, ctx.accountId, ctx.userId),
+    );
   }
 
   @Post('columns/:id/move')
@@ -66,7 +70,7 @@ export class ColumnsController {
     @CurrentUser() ctx: AuthContext,
   ): Promise<Column> {
     return this.commandBus.execute(
-      new MoveColumnCommand(id, dto.beforeColumnId ?? null, ctx.accountId),
+      new MoveColumnCommand(id, dto.beforeColumnId ?? null, ctx.accountId, ctx.userId),
     );
   }
 
@@ -74,6 +78,6 @@ export class ColumnsController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiNoContentResponse({ description: 'Column deleted with all its cards.' })
   remove(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() ctx: AuthContext): Promise<void> {
-    return this.commandBus.execute(new DeleteColumnCommand(id, ctx.accountId));
+    return this.commandBus.execute(new DeleteColumnCommand(id, ctx.accountId, ctx.userId));
   }
 }

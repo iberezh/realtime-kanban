@@ -2,8 +2,11 @@ import type { Board, Card, Column } from '../database/schema';
 import {
   BoardDeletedEvent,
   BoardRenamedEvent,
+  CardAssigneeChangedEvent,
   CardCreatedEvent,
   CardDeletedEvent,
+  CardLabelAttachedEvent,
+  CardLabelDetachedEvent,
   CardMovedEvent,
   CardUpdatedEvent,
   ColumnCreatedEvent,
@@ -23,7 +26,10 @@ export type WireEvent =
   | { type: 'card.created'; boardId: string; card: Card }
   | { type: 'card.updated'; boardId: string; card: Card }
   | { type: 'card.moved'; boardId: string; card: Card }
-  | { type: 'card.deleted'; boardId: string; columnId: string; cardId: string };
+  | { type: 'card.deleted'; boardId: string; columnId: string; cardId: string }
+  | { type: 'card.label_attached'; boardId: string; cardId: string; labelId: string }
+  | { type: 'card.label_detached'; boardId: string; cardId: string; labelId: string }
+  | { type: 'card.assignee_changed'; boardId: string; card: Card };
 
 export type DomainEvent =
   | BoardRenamedEvent
@@ -35,7 +41,10 @@ export type DomainEvent =
   | CardCreatedEvent
   | CardUpdatedEvent
   | CardMovedEvent
-  | CardDeletedEvent;
+  | CardDeletedEvent
+  | CardLabelAttachedEvent
+  | CardLabelDetachedEvent
+  | CardAssigneeChangedEvent;
 
 type DomainEventClass<E extends DomainEvent = DomainEvent> = new (...args: never[]) => E;
 
@@ -78,6 +87,23 @@ register(CardDeletedEvent, (e) => ({
   boardId: e.boardId,
   columnId: e.columnId,
   cardId: e.cardId,
+}));
+register(CardLabelAttachedEvent, (e) => ({
+  type: 'card.label_attached',
+  boardId: e.boardId,
+  cardId: e.cardId,
+  labelId: e.labelId,
+}));
+register(CardLabelDetachedEvent, (e) => ({
+  type: 'card.label_detached',
+  boardId: e.boardId,
+  cardId: e.cardId,
+  labelId: e.labelId,
+}));
+register(CardAssigneeChangedEvent, (e) => ({
+  type: 'card.assignee_changed',
+  boardId: e.boardId,
+  card: e.card,
 }));
 
 /** Single source for the relay's @EventsHandler subscription list. */

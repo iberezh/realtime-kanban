@@ -1,41 +1,88 @@
 'use client';
 
-import { Button, Group, Modal, Stack, Textarea, TextInput } from '@mantine/core';
+import {
+  Alert,
+  Button,
+  Divider,
+  Group,
+  Modal,
+  Stack,
+  Text,
+  Textarea,
+  TextInput,
+} from '@mantine/core';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { deleteCard, updateCard } from '@/lib/api';
-import type { Card } from '@/lib/types';
+import { dateInputValue } from '@/lib/format';
+import { useBoardStore } from '@/stores/board-store';
+import { CardAssigneeSelect } from './card-assignee-select';
+import { CardLabelPicker } from './card-label-picker';
 
 interface CardModalProps {
-  card: Card;
+  cardId: string;
   onClose: () => void;
 }
 
 interface CardFormValues {
   title: string;
   description: string;
+  dueAt: string;
 }
 
-export function CardModal({ card, onClose }: CardModalProps) {
+export function CardModal({ cardId, onClose }: CardModalProps) {
+  const card = useBoardStore((state) =>
+    state.view?.columns.flatMap((column) => column.cards).find((item) => item.id === cardId),
+  );
+
+  // The card can vanish from under us when a teammate deletes it.
+  useEffect(() => {
+    if (!card) {
+      onClose();
+    }
+  }, [card, onClose]);
+
+  const [actionError, setActionError] = useState<string | null>(null);
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<CardFormValues>({
-    defaultValues: { title: card.title, description: card.description ?? '' },
+    defaultValues: {
+      title: card?.title ?? '',
+      description: card?.description ?? '',
+      dueAt: dateInputValue(card?.dueAt ?? null),
+    },
   });
 
+  if (!card) {
+    return null;
+  }
+
   const submit = async (values: CardFormValues): Promise<void> => {
-    await updateCard(card.id, { title: values.title, description: values.description });
-    onClose();
+    try {
+      await updateCard(card.id, {
+        title: values.title,
+        description: values.description,
+        dueAt: values.dueAt ? `${values.dueAt}T00:00:00.000Z` : null,
+      });
+      onClose();
+    } catch {
+      setActionError('Could not save the card. Try again.');
+    }
   };
 
   const remove = async (): Promise<void> => {
-    await deleteCard(card.id);
-    onClose();
+    try {
+      await deleteCard(card.id);
+      onClose();
+    } catch {
+      setActionError('Could not delete the card. Try again.');
+    }
   };
 
   return (
-    <Modal opened onClose={onClose} title="Edit card" centered>
+    <Modal opened onClose={onClose} title="Edit card" centered size="lg">
       <form onSubmit={handleSubmit(submit)}>
         <Stack gap="md">
           <TextInput
@@ -54,6 +101,20 @@ export function CardModal({ card, onClose }: CardModalProps) {
               maxLength: { value: 5000, message: 'Keep it under 5000 characters' },
             })}
           />
+          <TextInput type="date" label="Due date" {...register('dueAt')} />
+          <Divider />
+          <div>
+            <Text size="sm" fw={500} mb={6}>
+              Labels
+            </Text>
+            <CardLabelPicker card={card} />
+          </div>
+          <CardAssigneeSelect card={card} />
+          {actionError && (
+            <Alert color="red" variant="light">
+              {actionError}
+            </Alert>
+          )}
           <Group justify="space-between">
             <Button variant="subtle" color="red" onClick={remove}>
               Delete

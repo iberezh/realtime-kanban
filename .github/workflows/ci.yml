@@ -24,6 +24,7 @@ jobs:
           --health-retries 10
     env:
       DATABASE_URL: postgresql://kanban:kanban@localhost:5432/kanban
+      JWT_SECRET: ci-test-secret-not-for-production
     steps:
       - uses: actions/checkout@v5
 

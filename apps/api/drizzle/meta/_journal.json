@@ -15,6 +15,13 @@
       "when": 1781769767277,
       "tag": "0001_woozy_black_tom",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1781771488437,
+      "tag": "0002_old_punisher",
+      "breakpoints": true
     }
   ]
 }

@@ -33,7 +33,7 @@ export class CreateColumnHandler implements ICommandHandler<CreateColumnCommand,
 
     const rank = rankBetween(await this.columns.lastRank(board.id), null);
     const column = await this.columns.create({ boardId: board.id, title: command.title, rank });
-    this.eventBus.publish(new ColumnCreatedEvent(board.id, column));
+    this.eventBus.publish(new ColumnCreatedEvent(board.id, column, command.actorId));
     return column;
   }
 }
@@ -56,7 +56,7 @@ export class RenameColumnHandler implements ICommandHandler<RenameColumnCommand,
     const column = await this.columns.rename(command.columnId, command.title);
     if (!column) throw new NotFoundException(`Column ${command.columnId} not found`);
 
-    this.eventBus.publish(new ColumnRenamedEvent(column.boardId, column));
+    this.eventBus.publish(new ColumnRenamedEvent(column.boardId, column, command.actorId));
     return column;
   }
 }
@@ -88,7 +88,7 @@ export class MoveColumnHandler implements ICommandHandler<MoveColumnCommand, Col
     const moved = await this.columns.updateRank(column.id, rank);
     if (!moved) throw new NotFoundException(`Column ${command.columnId} not found`);
 
-    this.eventBus.publish(new ColumnMovedEvent(moved.boardId, moved));
+    this.eventBus.publish(new ColumnMovedEvent(moved.boardId, moved, command.actorId));
     return moved;
   }
 }
@@ -109,6 +109,6 @@ export class DeleteColumnHandler implements ICommandHandler<DeleteColumnCommand,
     if (!board || board.accountId !== command.accountId) throw new ForbiddenException();
 
     await this.columns.delete(column.id);
-    this.eventBus.publish(new ColumnDeletedEvent(column.boardId, column.id));
+    this.eventBus.publish(new ColumnDeletedEvent(column.boardId, column.id, command.actorId));
   }
 }

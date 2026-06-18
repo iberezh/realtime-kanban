@@ -2,6 +2,7 @@ import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { type IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import type { Board } from '../../database/schema';
 import { BoardsRepository } from '../repositories/boards.repository';
+import { CardLabelsRepository } from '../repositories/card-labels.repository';
 import { CardsRepository } from '../repositories/cards.repository';
 import { ColumnsRepository } from '../repositories/columns.repository';
 import { GetBoardQuery, ListBoardsQuery } from './board.queries';
@@ -22,6 +23,7 @@ export class GetBoardHandler implements IQueryHandler<GetBoardQuery, BoardView> 
     private readonly boards: BoardsRepository,
     private readonly columns: ColumnsRepository,
     private readonly cards: CardsRepository,
+    private readonly cardLabels: CardLabelsRepository,
   ) {}
 
   async execute(query: GetBoardQuery): Promise<BoardView> {
@@ -29,10 +31,11 @@ export class GetBoardHandler implements IQueryHandler<GetBoardQuery, BoardView> 
     if (!board) throw new NotFoundException(`Board ${query.boardId} not found`);
     if (board.accountId !== query.accountId) throw new ForbiddenException();
 
-    const [columns, cards] = await Promise.all([
+    const [cols, cards, cardLabelIds] = await Promise.all([
       this.columns.listByBoard(board.id),
       this.cards.listByBoard(board.id),
+      this.cardLabels.labelIdsByBoard(board.id),
     ]);
-    return assembleBoardView(board, columns, cards);
+    return assembleBoardView(board, cols, cards, cardLabelIds);
   }
 }
