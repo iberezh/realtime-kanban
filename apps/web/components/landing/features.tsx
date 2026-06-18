@@ -1,28 +1,35 @@
+'use client';
+
+import { Icon } from '@iconify/react';
 import styles from './landing.module.css';
 import { Reveal } from './reveal';
 
 const FEATURES = [
   {
-    icon: '⚡',
+    icon: 'solar:bolt-bold-duotone',
     bg: '#efeaff',
+    color: '#7c5cff',
     title: 'Instant sync',
     body: 'Every move broadcasts in milliseconds over WebSockets. Drag here, it lands there — live.',
   },
   {
-    icon: '👁',
+    icon: 'solar:eye-bold-duotone',
     bg: '#e4fbf3',
+    color: '#1f9e85',
     title: 'Live presence',
     body: "See who's on the board and what they're touching, by avatar and color.",
   },
   {
-    icon: '🔗',
+    icon: 'solar:link-round-bold-duotone',
     bg: '#fff0e6',
+    color: '#e0632a',
     title: 'Guest links',
     body: 'Share a read-only link. Clients and stakeholders watch progress live — no login.',
   },
   {
-    icon: '🛡',
+    icon: 'solar:shield-check-bold-duotone',
     bg: '#fff6e0',
+    color: '#b07d1a',
     title: 'Conflict-safe',
     body: 'Two people dragging the same card? Fractional ranking keeps order intact for everyone.',
   },
@@ -46,7 +53,7 @@ export function Features() {
           <Reveal key={feature.title} delay={index * 0.06}>
             <div className={styles.feat}>
               <div className={styles.ficon} style={{ background: feature.bg }}>
-                {feature.icon}
+                <Icon icon={feature.icon} width={24} height={24} color={feature.color} />
               </div>
               <h3>{feature.title}</h3>
               <p>{feature.body}</p>

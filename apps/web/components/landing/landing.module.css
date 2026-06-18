@@ -20,7 +20,6 @@
 }
 
 .page a {
-  color: inherit;
   text-decoration: none;
 }
 .wrap {
@@ -53,6 +52,7 @@
   font-weight: 800;
   font-size: 20px;
   letter-spacing: -0.02em;
+  color: inherit;
 }
 .logo {
   width: 24px;
@@ -73,6 +73,9 @@
   font-size: 15px;
   font-weight: 500;
   color: var(--muted);
+}
+.navLinks a {
+  color: inherit;
 }
 .navLinks a:hover {
   color: var(--ink);
