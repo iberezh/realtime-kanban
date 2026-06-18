@@ -32,6 +32,18 @@ describe('Kanban API (integration)', () => {
       .send({ title: 'Doing' })
       .expect(201);
 
+    // WIP limit round-trips and can be cleared.
+    const { body: limited } = await agent
+      .patch(`/api/v1/columns/${doing.id}/wip-limit`)
+      .send({ wipLimit: 2 })
+      .expect(200);
+    expect(limited.wipLimit).toBe(2);
+    const { body: cleared } = await agent
+      .patch(`/api/v1/columns/${doing.id}/wip-limit`)
+      .send({ wipLimit: null })
+      .expect(200);
+    expect(cleared.wipLimit).toBeNull();
+
     const { body: cardA } = await agent
       .post(`/api/v1/columns/${todo.id}/cards`)
       .send({ title: 'A' })

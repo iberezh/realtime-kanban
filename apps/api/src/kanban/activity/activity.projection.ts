@@ -13,6 +13,7 @@ import {
   ColumnDeletedEvent,
   ColumnMovedEvent,
   ColumnRenamedEvent,
+  ColumnUpdatedEvent,
 } from '../events/kanban.events';
 import { ActivityRepository } from '../repositories/activity.repository';
 
@@ -25,6 +26,7 @@ type DomainEvent =
   | ColumnCreatedEvent
   | ColumnRenamedEvent
   | ColumnMovedEvent
+  | ColumnUpdatedEvent
   | ColumnDeletedEvent
   | CardCreatedEvent
   | CardUpdatedEvent
@@ -47,6 +49,7 @@ function getBoardId(event: DomainEvent): string {
   ColumnCreatedEvent,
   ColumnRenamedEvent,
   ColumnMovedEvent,
+  ColumnUpdatedEvent,
   ColumnDeletedEvent,
   CardCreatedEvent,
   CardUpdatedEvent,

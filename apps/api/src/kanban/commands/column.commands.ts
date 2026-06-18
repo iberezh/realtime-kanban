@@ -30,3 +30,12 @@ export class DeleteColumnCommand {
     public readonly actorId: string,
   ) {}
 }
+/** `wipLimit` null clears the limit. */
+export class SetColumnWipLimitCommand {
+  constructor(
+    public readonly columnId: string,
+    public readonly wipLimit: number | null,
+    public readonly accountId: string,
+    public readonly actorId: string,
+  ) {}
+}

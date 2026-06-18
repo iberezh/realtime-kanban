@@ -7,10 +7,12 @@ import { useCallback, useMemo, useState } from 'react';
 import { useBoard } from '@/hooks/use-board';
 import { useBoardDnd } from '@/hooks/use-board-dnd';
 import { createColumn } from '@/lib/api';
-import type { Identity } from '@/lib/types';
+import { type BoardFilter, cardMatchesFilter, EMPTY_FILTER } from '@/lib/card-filter';
+import type { Card, Identity } from '@/lib/types';
 import { useBoardStore } from '@/stores/board-store';
 import { useSessionStore } from '@/stores/session-store';
 import { ActivityFeed } from './activity-feed';
+import { BoardFilterBar } from './board-filter';
 import { BoardHeader } from './board-header';
 import { CardItem } from './card-item';
 import { CardModal } from './card-modal';
@@ -28,6 +30,7 @@ export function BoardScreen({ boardId }: BoardScreenProps) {
   const [labelsOpen, setLabelsOpen] = useState(false);
   const [activityOpen, setActivityOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
+  const [filter, setFilter] = useState<BoardFilter>(EMPTY_FILTER);
   // Subscribe per-field: a bare useBoardStore() re-renders on every mutation.
   const view = useBoardStore((s) => s.view);
   const members = useBoardStore((s) => s.members);
@@ -41,6 +44,7 @@ export function BoardScreen({ boardId }: BoardScreenProps) {
     [profile],
   );
   const closeCard = useCallback(() => setOpenCardId(null), []);
+  const cardMatches = useCallback((card: Card) => cardMatchesFilter(card, filter), [filter]);
 
   const { sensors, dragging, onDragStart, onDragEnd } = useBoardDnd(boardId);
   useBoard(boardId, identity);
@@ -71,6 +75,7 @@ export function BoardScreen({ boardId }: BoardScreenProps) {
         onOpenActivity={() => setActivityOpen(true)}
         onOpenShare={() => setShareOpen(true)}
       />
+      <BoardFilterBar filter={filter} onChange={setFilter} />
       <DndContext
         sensors={sensors}
         collisionDetection={closestCorners}
@@ -88,6 +93,7 @@ export function BoardScreen({ boardId }: BoardScreenProps) {
                   key={column.id}
                   column={column}
                   onOpenCard={(card) => setOpenCardId(card.id)}
+                  cardMatches={cardMatches}
                 />
               ))}
             </SortableContext>

@@ -63,6 +63,7 @@ export function applyEvent(view: BoardView, event: WireEvent): BoardView {
     case 'column.created':
     case 'column.renamed':
     case 'column.moved':
+    case 'column.updated':
       return upsertColumn(view, event.column);
     case 'column.deleted':
       return { ...view, columns: view.columns.filter((column) => column.id !== event.columnId) };

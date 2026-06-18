@@ -13,6 +13,7 @@ import {
   ColumnDeletedEvent,
   ColumnMovedEvent,
   ColumnRenamedEvent,
+  ColumnUpdatedEvent,
 } from '../kanban/events/kanban.events';
 
 /** The wire protocol: every domain event becomes one `board:event` message in the board's room. */
@@ -22,6 +23,7 @@ export type WireEvent =
   | { type: 'column.created'; boardId: string; column: Column }
   | { type: 'column.renamed'; boardId: string; column: Column }
   | { type: 'column.moved'; boardId: string; column: Column }
+  | { type: 'column.updated'; boardId: string; column: Column }
   | { type: 'column.deleted'; boardId: string; columnId: string }
   | { type: 'card.created'; boardId: string; card: Card }
   | { type: 'card.updated'; boardId: string; card: Card }
@@ -37,6 +39,7 @@ export type DomainEvent =
   | ColumnCreatedEvent
   | ColumnRenamedEvent
   | ColumnMovedEvent
+  | ColumnUpdatedEvent
   | ColumnDeletedEvent
   | CardCreatedEvent
   | CardUpdatedEvent
@@ -74,6 +77,11 @@ register(ColumnRenamedEvent, (e) => ({
   column: e.column,
 }));
 register(ColumnMovedEvent, (e) => ({ type: 'column.moved', boardId: e.boardId, column: e.column }));
+register(ColumnUpdatedEvent, (e) => ({
+  type: 'column.updated',
+  boardId: e.boardId,
+  column: e.column,
+}));
 register(ColumnDeletedEvent, (e) => ({
   type: 'column.deleted',
   boardId: e.boardId,

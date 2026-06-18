@@ -29,6 +29,7 @@ export interface Column {
   boardId: string;
   title: string;
   rank: string;
+  wipLimit: number | null;
   createdAt: string;
 }
 
@@ -127,6 +128,7 @@ export type WireEvent =
   | { type: 'column.created'; boardId: string; column: Column }
   | { type: 'column.renamed'; boardId: string; column: Column }
   | { type: 'column.moved'; boardId: string; column: Column }
+  | { type: 'column.updated'; boardId: string; column: Column }
   | { type: 'column.deleted'; boardId: string; columnId: string }
   | { type: 'card.created'; boardId: string; card: WireCard }
   | { type: 'card.updated'; boardId: string; card: WireCard }
@@ -142,6 +144,7 @@ const WIRE_TYPES: ReadonlySet<string> = new Set([
   'column.created',
   'column.renamed',
   'column.moved',
+  'column.updated',
   'column.deleted',
   'card.created',
   'card.updated',
