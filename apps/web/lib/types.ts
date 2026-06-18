@@ -33,6 +33,15 @@ export interface Column {
   createdAt: string;
 }
 
+export interface ChecklistItem {
+  id: string;
+  cardId: string;
+  text: string;
+  done: boolean;
+  rank: string;
+  createdAt: string;
+}
+
 export interface Card {
   id: string;
   columnId: string;
@@ -44,10 +53,11 @@ export interface Card {
   createdAt: string;
   updatedAt: string;
   labelIds: string[];
+  checklist: ChecklistItem[];
 }
 
-/** The card shape on the wire: a raw DB row, without the joined `labelIds`. */
-export type WireCard = Omit<Card, 'labelIds'>;
+/** The card shape on the wire: a raw DB row, without the joined `labelIds`/`checklist`. */
+export type WireCard = Omit<Card, 'labelIds' | 'checklist'>;
 
 export interface Label {
   id: string;
@@ -136,7 +146,10 @@ export type WireEvent =
   | { type: 'card.deleted'; boardId: string; columnId: string; cardId: string }
   | { type: 'card.label_attached'; boardId: string; cardId: string; labelId: string }
   | { type: 'card.label_detached'; boardId: string; cardId: string; labelId: string }
-  | { type: 'card.assignee_changed'; boardId: string; card: WireCard };
+  | { type: 'card.assignee_changed'; boardId: string; card: WireCard }
+  | { type: 'checklist.item_added'; boardId: string; cardId: string; item: ChecklistItem }
+  | { type: 'checklist.item_updated'; boardId: string; cardId: string; item: ChecklistItem }
+  | { type: 'checklist.item_deleted'; boardId: string; cardId: string; itemId: string };
 
 const WIRE_TYPES: ReadonlySet<string> = new Set([
   'board.renamed',
@@ -153,6 +166,9 @@ const WIRE_TYPES: ReadonlySet<string> = new Set([
   'card.label_attached',
   'card.label_detached',
   'card.assignee_changed',
+  'checklist.item_added',
+  'checklist.item_updated',
+  'checklist.item_deleted',
 ]);
 
 /** Socket payloads arrive untyped — gate them before they reach the store. */

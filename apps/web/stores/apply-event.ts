@@ -1,4 +1,12 @@
-import type { BoardView, Card, Column, ColumnView, WireCard, WireEvent } from '@/lib/types';
+import type {
+  BoardView,
+  Card,
+  ChecklistItem,
+  Column,
+  ColumnView,
+  WireCard,
+  WireEvent,
+} from '@/lib/types';
 
 const byRank = <T extends { rank: string }>(a: T, b: T): number => (a.rank < b.rank ? -1 : 1);
 
@@ -25,8 +33,9 @@ function upsertCard(view: BoardView, wire: WireCard): BoardView {
   if (!view.columns.some((column) => column.id === wire.columnId)) {
     return view;
   }
-  // Wire cards omit the label join — carry the labels we already know about.
-  const card: Card = { ...wire, labelIds: findCard(view, wire.id)?.labelIds ?? [] };
+  // Wire cards omit the joins — carry the labels and checklist we already know about.
+  const prev = findCard(view, wire.id);
+  const card: Card = { ...wire, labelIds: prev?.labelIds ?? [], checklist: prev?.checklist ?? [] };
   const columns = view.columns.map((column) => {
     const rest = column.cards.filter((item) => item.id !== card.id);
     if (column.id !== card.columnId) {
@@ -37,21 +46,19 @@ function upsertCard(view: BoardView, wire: WireCard): BoardView {
   return { ...view, columns };
 }
 
-function mapCardLabels(
-  view: BoardView,
-  cardId: string,
-  update: (labelIds: string[]) => string[],
-): BoardView {
+/** Replace the matching card with a transformed copy, leaving the rest untouched. */
+function mapCard(view: BoardView, cardId: string, update: (card: Card) => Card): BoardView {
   return {
     ...view,
     columns: view.columns.map((column) => ({
       ...column,
-      cards: column.cards.map((card) =>
-        card.id === cardId ? { ...card, labelIds: update(card.labelIds) } : card,
-      ),
+      cards: column.cards.map((card) => (card.id === cardId ? update(card) : card)),
     })),
   };
 }
+
+const upsertChecklistItem = (checklist: ChecklistItem[], item: ChecklistItem): ChecklistItem[] =>
+  [...checklist.filter((existing) => existing.id !== item.id), item].sort(byRank);
 
 /** Pure reducer: server wire events → next board view. The store and optimistic updates share it. */
 export function applyEvent(view: BoardView, event: WireEvent): BoardView {
@@ -73,11 +80,28 @@ export function applyEvent(view: BoardView, event: WireEvent): BoardView {
     case 'card.assignee_changed':
       return upsertCard(view, event.card);
     case 'card.label_attached':
-      return mapCardLabels(view, event.cardId, (ids) =>
-        ids.includes(event.labelId) ? ids : [...ids, event.labelId],
-      );
+      return mapCard(view, event.cardId, (card) => ({
+        ...card,
+        labelIds: card.labelIds.includes(event.labelId)
+          ? card.labelIds
+          : [...card.labelIds, event.labelId],
+      }));
     case 'card.label_detached':
-      return mapCardLabels(view, event.cardId, (ids) => ids.filter((id) => id !== event.labelId));
+      return mapCard(view, event.cardId, (card) => ({
+        ...card,
+        labelIds: card.labelIds.filter((id) => id !== event.labelId),
+      }));
+    case 'checklist.item_added':
+    case 'checklist.item_updated':
+      return mapCard(view, event.cardId, (card) => ({
+        ...card,
+        checklist: upsertChecklistItem(card.checklist, event.item),
+      }));
+    case 'checklist.item_deleted':
+      return mapCard(view, event.cardId, (card) => ({
+        ...card,
+        checklist: card.checklist.filter((item) => item.id !== event.itemId),
+      }));
     case 'card.deleted':
       return {
         ...view,

@@ -1,4 +1,5 @@
 import {
+  boolean,
   index,
   integer,
   jsonb,
@@ -123,6 +124,21 @@ export const cardLabels = pgTable(
   (table) => [primaryKey({ columns: [table.cardId, table.labelId] })],
 );
 
+export const checklistItems = pgTable(
+  'checklist_items',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    cardId: uuid('card_id')
+      .notNull()
+      .references(() => cards.id, { onDelete: 'cascade' }),
+    text: text('text').notNull(),
+    done: boolean('done').notNull().default(false),
+    rank: text('rank').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index('checklist_card_rank_idx').on(table.cardId, table.rank)],
+);
+
 export const activity = pgTable(
   'activity',
   {
@@ -160,5 +176,6 @@ export type Board = typeof boards.$inferSelect;
 export type Column = typeof columns.$inferSelect;
 export type Card = typeof cards.$inferSelect;
 export type CardLabel = typeof cardLabels.$inferSelect;
+export type ChecklistItem = typeof checklistItems.$inferSelect;
 export type Activity = typeof activity.$inferSelect;
 export type ShareLink = typeof shareLinks.$inferSelect;

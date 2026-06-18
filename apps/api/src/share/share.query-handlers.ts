@@ -5,6 +5,7 @@ import { assembleBoardView } from '../kanban/queries/board.views';
 import { BoardsRepository } from '../kanban/repositories/boards.repository';
 import { CardLabelsRepository } from '../kanban/repositories/card-labels.repository';
 import { CardsRepository } from '../kanban/repositories/cards.repository';
+import { ChecklistRepository } from '../kanban/repositories/checklist.repository';
 import { ColumnsRepository } from '../kanban/repositories/columns.repository';
 import { LabelsRepository } from '../labels/labels.repository';
 import {
@@ -44,6 +45,7 @@ export class ResolveShareLinkHandler
     private readonly columns: ColumnsRepository,
     private readonly cards: CardsRepository,
     private readonly cardLabels: CardLabelsRepository,
+    private readonly checklist: ChecklistRepository,
     private readonly labels: LabelsRepository,
   ) {}
 
@@ -53,16 +55,17 @@ export class ResolveShareLinkHandler
     if (!board) {
       throw new NotFoundException('This share link is no longer active');
     }
-    const [cols, cards, cardLabelIds, accountLabels] = await Promise.all([
+    const [cols, cards, cardLabelIds, checklist, accountLabels] = await Promise.all([
       this.columns.listByBoard(board.id),
       this.cards.listByBoard(board.id),
       this.cardLabels.labelIdsByBoard(board.id),
+      this.checklist.byBoard(board.id),
       this.labels.listByAccount(board.accountId),
     ]);
     // Expose only the labels this board actually uses, not the whole account's set.
     const used = new Set([...cardLabelIds.values()].flat());
     const labels = accountLabels.filter((label) => used.has(label.id));
-    return { ...assembleBoardView(board, cols, cards, cardLabelIds), labels };
+    return { ...assembleBoardView(board, cols, cards, cardLabelIds, checklist), labels };
   }
 }
 

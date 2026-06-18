@@ -15,6 +15,9 @@ const VERBS: Record<string, string> = {
   CardLabelAttachedEvent: 'added a label',
   CardLabelDetachedEvent: 'removed a label',
   CardAssigneeChangedEvent: 'changed an assignee',
+  ChecklistItemAddedEvent: 'added a checklist item',
+  ChecklistItemUpdatedEvent: 'updated a checklist item',
+  ChecklistItemDeletedEvent: 'removed a checklist item',
 };
 
 export const activityVerb = (type: string): string => VERBS[type] ?? 'updated the board';

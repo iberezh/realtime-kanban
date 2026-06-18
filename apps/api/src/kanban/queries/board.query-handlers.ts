@@ -4,6 +4,7 @@ import type { Board } from '../../database/schema';
 import { BoardsRepository } from '../repositories/boards.repository';
 import { CardLabelsRepository } from '../repositories/card-labels.repository';
 import { CardsRepository } from '../repositories/cards.repository';
+import { ChecklistRepository } from '../repositories/checklist.repository';
 import { ColumnsRepository } from '../repositories/columns.repository';
 import { GetBoardQuery, ListBoardsQuery } from './board.queries';
 import { assembleBoardView, type BoardView } from './board.views';
@@ -24,6 +25,7 @@ export class GetBoardHandler implements IQueryHandler<GetBoardQuery, BoardView> 
     private readonly columns: ColumnsRepository,
     private readonly cards: CardsRepository,
     private readonly cardLabels: CardLabelsRepository,
+    private readonly checklist: ChecklistRepository,
   ) {}
 
   async execute(query: GetBoardQuery): Promise<BoardView> {
@@ -31,11 +33,12 @@ export class GetBoardHandler implements IQueryHandler<GetBoardQuery, BoardView> 
     if (!board) throw new NotFoundException(`Board ${query.boardId} not found`);
     if (board.accountId !== query.accountId) throw new ForbiddenException();
 
-    const [cols, cards, cardLabelIds] = await Promise.all([
+    const [cols, cards, cardLabelIds, checklist] = await Promise.all([
       this.columns.listByBoard(board.id),
       this.cards.listByBoard(board.id),
       this.cardLabels.labelIdsByBoard(board.id),
+      this.checklist.byBoard(board.id),
     ]);
-    return assembleBoardView(board, cols, cards, cardLabelIds);
+    return assembleBoardView(board, cols, cards, cardLabelIds, checklist);
   }
 }
