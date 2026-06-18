@@ -6,6 +6,8 @@ import type { AuthContext, PublicProfile } from './auth.types';
 import type { SignupDto } from './dto/signup.dto';
 
 const BCRYPT_ROUNDS = 12;
+// Compared against on unknown emails so login timing doesn't reveal whether an account exists.
+const DUMMY_HASH = bcrypt.hashSync('lane-timing-equalizer', BCRYPT_ROUNDS);
 const AVATAR_COLORS = ['#4f46e5', '#0891b2', '#16a34a', '#dc2626', '#d97706', '#7c3aed'];
 
 function pickColor(email: string): string {
@@ -41,7 +43,7 @@ export class AuthService {
 
   async validate(email: string, password: string): Promise<AuthContext> {
     const user = await this.repo.findUserByEmail(email);
-    const valid = user ? await bcrypt.compare(password, user.passwordHash) : false;
+    const valid = await bcrypt.compare(password, user?.passwordHash ?? DUMMY_HASH);
 
     if (!user || !valid) throw new UnauthorizedException('Invalid credentials');
 

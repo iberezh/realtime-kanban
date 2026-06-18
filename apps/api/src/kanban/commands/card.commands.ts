@@ -21,7 +21,7 @@ export class MoveCardCommand {
     public readonly cardId: string,
     public readonly toColumnId: string,
     public readonly beforeCardId: string | null,
-    public readonly accountId?: string,
+    public readonly accountId: string,
   ) {}
 }
 

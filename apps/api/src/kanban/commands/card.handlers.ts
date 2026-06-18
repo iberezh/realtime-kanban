@@ -57,14 +57,17 @@ export class UpdateCardHandler implements ICommandHandler<UpdateCardCommand, Car
   ) {}
 
   async execute(command: UpdateCardCommand): Promise<Card> {
-    const card = await this.cards.update(command.cardId, command.patch);
-    if (!card) throw new NotFoundException(`Card ${command.cardId} not found`);
+    const existing = await this.cards.findById(command.cardId);
+    if (!existing) throw new NotFoundException(`Card ${command.cardId} not found`);
 
-    const column = await this.columns.findById(card.columnId);
-    if (!column) throw new NotFoundException(`Column ${card.columnId} not found`);
+    const column = await this.columns.findById(existing.columnId);
+    if (!column) throw new NotFoundException(`Column ${existing.columnId} not found`);
 
     const board = await this.boards.findById(column.boardId);
     if (!board || board.accountId !== command.accountId) throw new ForbiddenException();
+
+    const card = await this.cards.update(command.cardId, command.patch);
+    if (!card) throw new NotFoundException(`Card ${command.cardId} not found`);
 
     this.eventBus.publish(new CardUpdatedEvent(column.boardId, card));
     return card;
@@ -74,6 +77,7 @@ export class UpdateCardHandler implements ICommandHandler<UpdateCardCommand, Car
 @CommandHandler(MoveCardCommand)
 export class MoveCardHandler implements ICommandHandler<MoveCardCommand, Card> {
   constructor(
+    private readonly boards: BoardsRepository,
     private readonly columns: ColumnsRepository,
     private readonly cards: CardsRepository,
     private readonly eventBus: EventBus,
@@ -91,6 +95,9 @@ export class MoveCardHandler implements ICommandHandler<MoveCardCommand, Card> {
     if (source.boardId !== target.boardId) {
       throw new BadRequestException('Cards can only move within their board');
     }
+
+    const board = await this.boards.findById(target.boardId);
+    if (!board || board.accountId !== command.accountId) throw new ForbiddenException();
 
     const siblings = (await this.cards.listRanks(target.id)).filter((item) => item.id !== card.id);
     const placement = placementBefore(siblings, command.beforeCardId);
