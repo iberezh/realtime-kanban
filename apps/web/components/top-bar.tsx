@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { logout } from '@/lib/api';
 import { useSessionStore } from '@/stores/session-store';
 import { BillingButton } from './billing-button';
+import { NotificationsBell } from './notifications-bell';
 
 export function TopBar() {
   const router = useRouter();
@@ -28,6 +29,7 @@ export function TopBar() {
         Lane
       </Anchor>
       <Group gap="md">
+        <NotificationsBell />
         <BillingButton />
         {profile && (
           <Text size="sm" c="dimmed">

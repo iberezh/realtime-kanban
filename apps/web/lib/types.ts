@@ -67,6 +67,39 @@ export interface Label {
   createdAt: string;
 }
 
+/** A card comment with its author's display info resolved server-side. */
+export interface CommentView {
+  id: string;
+  cardId: string;
+  authorId: string | null;
+  authorName: string;
+  authorColor: string;
+  body: string;
+  createdAt: string;
+}
+
+export interface NotificationData {
+  boardId?: string;
+  cardId?: string;
+  commentId?: string;
+  actorName?: string;
+  snippet?: string;
+}
+
+export interface AppNotification {
+  id: string;
+  userId: string;
+  type: string;
+  data: NotificationData;
+  readAt: string | null;
+  createdAt: string;
+}
+
+/** Comment wire events arrive on the board room; the card modal consumes them directly. */
+export type CommentEvent =
+  | { type: 'comment.created'; boardId: string; cardId: string; comment: CommentView }
+  | { type: 'comment.deleted'; boardId: string; cardId: string; commentId: string };
+
 /** A workspace member (distinct from {@link Member}, which is live socket presence). */
 export interface AccountMember {
   userId: string;
