@@ -8,7 +8,7 @@ export class EnvironmentVariables {
   PORT: number = 4000;
 
   @IsString()
-  CORS_ORIGIN: string = 'http://localhost:3000';
+  CORS_ORIGIN: string = 'http://localhost:3002';
 
   @IsString()
   @MinLength(1)
