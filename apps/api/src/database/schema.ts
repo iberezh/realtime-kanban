@@ -136,6 +136,20 @@ export const activity = pgTable(
   (table) => [index('activity_board_idx').on(table.boardId, table.createdAt)],
 );
 
+export const shareLinks = pgTable(
+  'share_links',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    boardId: uuid('board_id')
+      .notNull()
+      .references(() => boards.id, { onDelete: 'cascade' }),
+    token: text('token').notNull().unique(),
+    createdBy: uuid('created_by').references(() => users.id, { onDelete: 'set null' }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index('share_links_board_idx').on(table.boardId)],
+);
+
 export type Account = typeof accounts.$inferSelect;
 export type User = typeof users.$inferSelect;
 export type Membership = typeof memberships.$inferSelect;
@@ -145,3 +159,4 @@ export type Column = typeof columns.$inferSelect;
 export type Card = typeof cards.$inferSelect;
 export type CardLabel = typeof cardLabels.$inferSelect;
 export type Activity = typeof activity.$inferSelect;
+export type ShareLink = typeof shareLinks.$inferSelect;

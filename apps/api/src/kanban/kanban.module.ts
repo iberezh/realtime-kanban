@@ -80,5 +80,6 @@ const queryHandlers = [
     ...commandHandlers,
     ...queryHandlers,
   ],
+  exports: [BoardsRepository, ColumnsRepository, CardsRepository, CardLabelsRepository],
 })
 export class KanbanModule {}
