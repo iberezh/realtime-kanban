@@ -1,6 +1,7 @@
 'use client';
 
 import { Select } from '@mantine/core';
+import { useMemo } from 'react';
 import { setAssignee } from '@/lib/api';
 import type { Card } from '@/lib/types';
 import { useBoardStore } from '@/stores/board-store';
@@ -8,7 +9,10 @@ import { useBoardStore } from '@/stores/board-store';
 /** Picks a card's assignee from the workspace members; clears to unassigned. */
 export function CardAssigneeSelect({ card }: { card: Card }) {
   const members = useBoardStore((state) => state.accountMembers);
-  const data = members.map((member) => ({ value: member.userId, label: member.name }));
+  const data = useMemo(
+    () => members.map((member) => ({ value: member.userId, label: member.name })),
+    [members],
+  );
 
   return (
     <Select

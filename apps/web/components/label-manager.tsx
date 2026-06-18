@@ -17,12 +17,15 @@ interface LabelManagerProps {
 /** Workspace-wide label CRUD; the store is the single source so cards stay in sync. */
 export function LabelManager({ opened, onClose }: LabelManagerProps) {
   const labels = useBoardStore((state) => state.labels);
-  const setLabels = useBoardStore((state) => state.setLabels);
   const [name, setName] = useState('');
   const [color, setColor] = useState(DEFAULT_COLOR);
 
   const refresh = (): void => {
-    void listLabels().then(setLabels, () => undefined);
+    // Actions are static — no need to subscribe to setLabels.
+    void listLabels().then(
+      (next) => useBoardStore.getState().setLabels(next),
+      () => undefined,
+    );
   };
 
   const add = async (): Promise<void> => {

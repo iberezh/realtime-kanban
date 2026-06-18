@@ -3,7 +3,7 @@
 import { closestCorners, DndContext, DragOverlay } from '@dnd-kit/core';
 import { horizontalListSortingStrategy, SortableContext } from '@dnd-kit/sortable';
 import { Alert, Box, Center, Group, Loader, ScrollArea, Text } from '@mantine/core';
-import { useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useBoard } from '@/hooks/use-board';
 import { useBoardDnd } from '@/hooks/use-board-dnd';
 import { createColumn } from '@/lib/api';
@@ -26,12 +26,19 @@ export function BoardScreen({ boardId }: BoardScreenProps) {
   const [openCardId, setOpenCardId] = useState<string | null>(null);
   const [labelsOpen, setLabelsOpen] = useState(false);
   const [activityOpen, setActivityOpen] = useState(false);
-  const { view, members, deleted, error } = useBoardStore();
+  // Subscribe per-field: a bare useBoardStore() re-renders on every mutation.
+  const view = useBoardStore((s) => s.view);
+  const members = useBoardStore((s) => s.members);
+  const deleted = useBoardStore((s) => s.deleted);
+  const error = useBoardStore((s) => s.error);
   const profile = useSessionStore((s) => s.profile);
 
-  const identity: Identity | null = profile
-    ? { name: profile.user.name, color: profile.user.color }
-    : null;
+  // Stable across renders, or useBoard's effect would tear down and rejoin the socket each time.
+  const identity = useMemo<Identity | null>(
+    () => (profile ? { name: profile.user.name, color: profile.user.color } : null),
+    [profile],
+  );
+  const closeCard = useCallback(() => setOpenCardId(null), []);
 
   const { sensors, dragging, onDragStart, onDragEnd } = useBoardDnd(boardId);
   useBoard(boardId, identity);
@@ -100,7 +107,7 @@ export function BoardScreen({ boardId }: BoardScreenProps) {
           {dragging.card && <CardItem card={dragging.card} onOpen={() => undefined} />}
         </DragOverlay>
       </DndContext>
-      {openCardId && <CardModal cardId={openCardId} onClose={() => setOpenCardId(null)} />}
+      {openCardId && <CardModal cardId={openCardId} onClose={closeCard} />}
       <LabelManager opened={labelsOpen} onClose={() => setLabelsOpen(false)} />
       <ActivityFeed
         boardId={boardId}

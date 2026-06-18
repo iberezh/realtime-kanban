@@ -1,7 +1,17 @@
 'use client';
 
-import { Button, Divider, Group, Modal, Stack, Text, Textarea, TextInput } from '@mantine/core';
-import { useEffect } from 'react';
+import {
+  Alert,
+  Button,
+  Divider,
+  Group,
+  Modal,
+  Stack,
+  Text,
+  Textarea,
+  TextInput,
+} from '@mantine/core';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { deleteCard, updateCard } from '@/lib/api';
 import { dateInputValue } from '@/lib/format';
@@ -32,6 +42,7 @@ export function CardModal({ cardId, onClose }: CardModalProps) {
     }
   }, [card, onClose]);
 
+  const [actionError, setActionError] = useState<string | null>(null);
   const {
     register,
     handleSubmit,
@@ -49,17 +60,25 @@ export function CardModal({ cardId, onClose }: CardModalProps) {
   }
 
   const submit = async (values: CardFormValues): Promise<void> => {
-    await updateCard(card.id, {
-      title: values.title,
-      description: values.description,
-      dueAt: values.dueAt ? `${values.dueAt}T00:00:00.000Z` : null,
-    });
-    onClose();
+    try {
+      await updateCard(card.id, {
+        title: values.title,
+        description: values.description,
+        dueAt: values.dueAt ? `${values.dueAt}T00:00:00.000Z` : null,
+      });
+      onClose();
+    } catch {
+      setActionError('Could not save the card. Try again.');
+    }
   };
 
   const remove = async (): Promise<void> => {
-    await deleteCard(card.id);
-    onClose();
+    try {
+      await deleteCard(card.id);
+      onClose();
+    } catch {
+      setActionError('Could not delete the card. Try again.');
+    }
   };
 
   return (
@@ -91,6 +110,11 @@ export function CardModal({ cardId, onClose }: CardModalProps) {
             <CardLabelPicker card={card} />
           </div>
           <CardAssigneeSelect card={card} />
+          {actionError && (
+            <Alert color="red" variant="light">
+              {actionError}
+            </Alert>
+          )}
           <Group justify="space-between">
             <Button variant="subtle" color="red" onClick={remove}>
               Delete
