@@ -11,6 +11,8 @@ interface BoardState {
   setMembers: (members: Member[]) => void;
   setError: (error: string) => void;
   apply: (event: WireEvent) => void;
+  /** Rollback target for failed optimistic updates. */
+  restore: (view: BoardView | null) => void;
   reset: () => void;
 }
 
@@ -29,5 +31,6 @@ export const useBoardStore = create<BoardState>((set) => ({
       }
       return state.view ? { view: applyEvent(state.view, event) } : {};
     }),
+  restore: (view) => set({ view }),
   reset: () => set({ view: null, members: [], deleted: false, error: null }),
 }));
