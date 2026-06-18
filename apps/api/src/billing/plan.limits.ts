@@ -7,8 +7,13 @@ export interface PlanLimits {
   customLabels: boolean;
 }
 
-/** An account's plan, defaulting to the most restrictive tier when unknown. */
-export const planOf = (account: { plan: string } | null): Plan => (account?.plan ?? 'free') as Plan;
+const VALID_PLANS = new Set<string>(['free', 'pro', 'business']);
+
+/** An account's plan, defaulting to the most restrictive tier when unknown or invalid. */
+export const planOf = (account: { plan: string } | null): Plan => {
+  const plan = account?.plan ?? 'free';
+  return VALID_PLANS.has(plan) ? (plan as Plan) : 'free';
+};
 
 export const PLAN_LIMITS: Record<Plan, PlanLimits> = {
   free: { boards: 1, activityDays: 1, guestLinks: false, customLabels: false },

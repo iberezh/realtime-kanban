@@ -7,7 +7,7 @@ import {
   type CheckoutResult,
   type PaidPlan,
 } from './billing.types';
-import { PLAN_LIMITS, type Plan } from './plan.limits';
+import { PLAN_LIMITS, planOf } from './plan.limits';
 
 @Injectable()
 export class BillingService {
@@ -26,7 +26,7 @@ export class BillingService {
 
   async status(accountId: string): Promise<BillingStatus> {
     const account = await this.require(accountId);
-    const plan = account.plan as Plan;
+    const plan = planOf(account);
     const boards = await this.accounts.countBoards(accountId);
     return { plan, mode: this.provider.mode, limits: PLAN_LIMITS[plan], usage: { boards } };
   }

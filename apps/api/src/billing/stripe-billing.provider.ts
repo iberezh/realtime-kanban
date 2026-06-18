@@ -10,6 +10,9 @@ import type { Plan } from './plan.limits';
 type StripeClient = Stripe.Stripe;
 type StripeEvent = ReturnType<StripeClient['webhooks']['constructEvent']>;
 
+/** Subscription statuses that should keep the paid plan active. */
+const ACTIVE_STATUSES = new Set(['active', 'trialing']);
+
 @Injectable()
 export class StripeBillingProvider implements BillingProvider {
   readonly mode = 'stripe' as const;
@@ -22,6 +25,8 @@ export class StripeBillingProvider implements BillingProvider {
     this.stripe = new Stripe(config.getOrThrow<string>('STRIPE_SECRET_KEY'), {
       apiVersion: '2026-05-27.dahlia',
     });
+    // Fail fast at startup rather than silently dropping webhooks later.
+    this.config.getOrThrow<string>('STRIPE_WEBHOOK_SECRET');
   }
 
   private appUrl(): string {
@@ -84,32 +89,25 @@ export class StripeBillingProvider implements BillingProvider {
     await this.applyEvent(event);
   }
 
+  // Plan state is driven only by subscription events, resolved from the (trusted)
+  // price id — never from editable session metadata.
   private async applyEvent(event: StripeEvent): Promise<void> {
-    if (event.type === 'checkout.session.completed') {
-      const s = event.data.object;
-      const accountId = s.client_reference_id ?? s.metadata?.accountId;
-      const plan = s.metadata?.plan as Plan | undefined;
-      if (accountId && plan) {
-        await this.accounts.setSubscription(accountId, {
-          plan,
-          subscriptionId: typeof s.subscription === 'string' ? s.subscription : '',
-        });
-      }
+    if (
+      event.type !== 'customer.subscription.created' &&
+      event.type !== 'customer.subscription.updated' &&
+      event.type !== 'customer.subscription.deleted'
+    ) {
       return;
     }
-    if (
-      event.type === 'customer.subscription.updated' ||
-      event.type === 'customer.subscription.deleted'
-    ) {
-      const sub = event.data.object;
-      const customerId = typeof sub.customer === 'string' ? sub.customer : sub.customer.id;
-      const account = await this.accounts.findByStripeCustomerId(customerId);
-      if (!account) return;
-      const active = event.type === 'customer.subscription.updated' && sub.status === 'active';
-      await this.accounts.setPlan(
-        account.id,
-        active ? this.planForPrice(sub.items.data[0]?.price.id) : 'free',
-      );
+    const sub = event.data.object;
+    const customerId = typeof sub.customer === 'string' ? sub.customer : sub.customer.id;
+    const account = await this.accounts.findByStripeCustomerId(customerId);
+    if (!account) {
+      return;
     }
+    const active =
+      event.type !== 'customer.subscription.deleted' && ACTIVE_STATUSES.has(sub.status);
+    const plan = active ? this.planForPrice(sub.items.data[0]?.price.id) : 'free';
+    await this.accounts.setSubscription(account.id, { plan, subscriptionId: sub.id });
   }
 }

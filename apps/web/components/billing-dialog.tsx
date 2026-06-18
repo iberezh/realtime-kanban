@@ -1,6 +1,6 @@
 'use client';
 
-import { Badge, Button, Card, Group, Modal, Stack, Text } from '@mantine/core';
+import { Alert, Badge, Button, Card, Group, Modal, Stack, Text } from '@mantine/core';
 import { useState } from 'react';
 import { openPortal, startCheckout } from '@/lib/billing-api';
 import type { BillingStatus, Plan } from '@/lib/types';
@@ -30,21 +30,30 @@ interface BillingDialogProps {
 
 export function BillingDialog({ status, opened, onClose }: BillingDialogProps) {
   const [busy, setBusy] = useState<Plan | null>(null);
+  const [portalBusy, setPortalBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const current = status?.plan ?? 'free';
 
   const upgrade = async (plan: 'pro' | 'business'): Promise<void> => {
     setBusy(plan);
+    setError(null);
     try {
       const { url } = await startCheckout(plan);
       window.location.href = url;
     } catch {
       setBusy(null);
+      setError('Could not start checkout. Try again.');
     }
   };
   const manage = async (): Promise<void> => {
-    const { url } = await openPortal().catch(() => ({ url: '' }));
-    if (url) {
+    setPortalBusy(true);
+    setError(null);
+    try {
+      const { url } = await openPortal();
       window.location.href = url;
+    } catch {
+      setPortalBusy(false);
+      setError('Could not open the billing portal. Try again.');
     }
   };
 
@@ -95,8 +104,13 @@ export function BillingDialog({ status, opened, onClose }: BillingDialogProps) {
           </Card>
         ))}
       </Group>
+      {error && (
+        <Alert color="red" variant="light" mt="md">
+          {error}
+        </Alert>
+      )}
       {status?.mode === 'stripe' && current !== 'free' && (
-        <Button variant="subtle" size="xs" mt="md" onClick={manage}>
+        <Button variant="subtle" size="xs" mt="md" loading={portalBusy} onClick={manage}>
           Manage billing
         </Button>
       )}
