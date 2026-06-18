@@ -1,14 +1,8 @@
 'use client';
 
 import { Avatar, AvatarGroup, Tooltip } from '@mantine/core';
+import { initials } from '@/lib/format';
 import type { Member } from '@/lib/types';
-
-const initials = (name: string): string =>
-  name
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((part) => part.charAt(0).toUpperCase())
-    .join('');
 
 export function PresenceAvatars({ members }: { members: Member[] }) {
   const shown = members.slice(0, 6);

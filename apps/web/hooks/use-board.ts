@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { getBoard } from '@/lib/api';
 import { getSocket } from '@/lib/socket';
 import { type Identity, isWireEvent, type Member } from '@/lib/types';
+import { listLabels, listMembers } from '@/lib/workspace-api';
 import { useBoardStore } from '@/stores/board-store';
 
 /** Loads the board, joins its realtime room, and feeds server events into the store. */
@@ -13,7 +14,8 @@ export function useBoard(boardId: string, identity: Identity | null): void {
       return;
     }
     // Zustand actions are static — read them once instead of subscribing.
-    const { setView, setMembers, setError, apply, reset } = useBoardStore.getState();
+    const { setView, setMembers, setLabels, setAccountMembers, setError, apply, reset } =
+      useBoardStore.getState();
     let active = true;
     const socket = getSocket();
 
@@ -24,6 +26,15 @@ export function useBoard(boardId: string, identity: Identity | null): void {
           setError(cause instanceof Error ? cause.message : 'Failed to load board');
         }
       });
+    // Workspace labels and members feed the card editor; failures here are non-fatal.
+    listLabels().then(
+      (labels) => active && setLabels(labels),
+      () => undefined,
+    );
+    listMembers().then(
+      (members) => active && setAccountMembers(members),
+      () => undefined,
+    );
 
     const join = (): void => {
       socket.emit(

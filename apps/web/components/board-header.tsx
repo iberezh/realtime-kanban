@@ -1,6 +1,6 @@
 'use client';
 
-import { Anchor, Group, Title } from '@mantine/core';
+import { Anchor, Button, Group, Title } from '@mantine/core';
 import Link from 'next/link';
 import type { Member } from '@/lib/types';
 import { PresenceAvatars } from './presence-avatars';
@@ -8,9 +8,11 @@ import { PresenceAvatars } from './presence-avatars';
 interface BoardHeaderProps {
   title: string;
   members: Member[];
+  onOpenLabels: () => void;
+  onOpenActivity: () => void;
 }
 
-export function BoardHeader({ title, members }: BoardHeaderProps) {
+export function BoardHeader({ title, members, onOpenLabels, onOpenActivity }: BoardHeaderProps) {
   return (
     <Group justify="space-between" px="lg" py="sm">
       <Group gap="md">
@@ -19,7 +21,15 @@ export function BoardHeader({ title, members }: BoardHeaderProps) {
         </Anchor>
         <Title order={3}>{title}</Title>
       </Group>
-      <PresenceAvatars members={members} />
+      <Group gap="sm">
+        <Button variant="subtle" size="xs" onClick={onOpenLabels}>
+          Labels
+        </Button>
+        <Button variant="subtle" size="xs" onClick={onOpenActivity}>
+          Activity
+        </Button>
+        <PresenceAvatars members={members} />
+      </Group>
     </Group>
   );
 }

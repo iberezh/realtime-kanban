@@ -18,9 +18,17 @@ export const ENDPOINTS = {
   columnCards: (columnId: string) => `/columns/${columnId}/cards`,
   card: (cardId: string) => `/cards/${cardId}`,
   cardMove: (cardId: string) => `/cards/${cardId}/move`,
+  cardAssignee: (cardId: string) => `/cards/${cardId}/assignee`,
+  cardLabels: (cardId: string) => `/cards/${cardId}/labels`,
+  cardLabel: (cardId: string, labelId: string) => `/cards/${cardId}/labels/${labelId}`,
+  // Workspace
+  labels: '/labels',
+  label: (labelId: string) => `/labels/${labelId}`,
+  members: '/members',
+  boardActivity: (boardId: string) => `/boards/${boardId}/activity`,
 } as const;
 
-async function api<T>(path: string, init?: RequestInit): Promise<T> {
+export async function api<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${API_URL}${path}`, {
     ...init,
     credentials: 'include',
@@ -81,11 +89,20 @@ export const createCard = (columnId: string, title: string, description?: string
 
 export const updateCard = (
   cardId: string,
-  patch: { title?: string; description?: string },
+  patch: { title?: string; description?: string; dueAt?: string | null },
 ): Promise<Card> => api(ENDPOINTS.card(cardId), { method: 'PATCH', body: JSON.stringify(patch) });
 
 export const deleteCard = (cardId: string): Promise<void> =>
   api(ENDPOINTS.card(cardId), { method: 'DELETE' });
+
+export const setAssignee = (cardId: string, assigneeId: string | null): Promise<void> =>
+  api(ENDPOINTS.cardAssignee(cardId), { method: 'PATCH', body: JSON.stringify({ assigneeId }) });
+
+export const attachLabel = (cardId: string, labelId: string): Promise<void> =>
+  api(ENDPOINTS.cardLabels(cardId), { method: 'POST', body: JSON.stringify({ labelId }) });
+
+export const detachLabel = (cardId: string, labelId: string): Promise<void> =>
+  api(ENDPOINTS.cardLabel(cardId, labelId), { method: 'DELETE' });
 
 export const moveColumn = (columnId: string, beforeColumnId?: string): Promise<Column> =>
   api(ENDPOINTS.columnMove(columnId), {

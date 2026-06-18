@@ -7,21 +7,25 @@ import { useState } from 'react';
 import { useBoard } from '@/hooks/use-board';
 import { useBoardDnd } from '@/hooks/use-board-dnd';
 import { createColumn } from '@/lib/api';
-import type { Card, Identity } from '@/lib/types';
+import type { Identity } from '@/lib/types';
 import { useBoardStore } from '@/stores/board-store';
 import { useSessionStore } from '@/stores/session-store';
+import { ActivityFeed } from './activity-feed';
 import { BoardHeader } from './board-header';
 import { CardItem } from './card-item';
 import { CardModal } from './card-modal';
 import { ColumnView } from './column-view';
 import { InlineAdd } from './inline-add';
+import { LabelManager } from './label-manager';
 
 interface BoardScreenProps {
   boardId: string;
 }
 
 export function BoardScreen({ boardId }: BoardScreenProps) {
-  const [openCard, setOpenCard] = useState<Card | null>(null);
+  const [openCardId, setOpenCardId] = useState<string | null>(null);
+  const [labelsOpen, setLabelsOpen] = useState(false);
+  const [activityOpen, setActivityOpen] = useState(false);
   const { view, members, deleted, error } = useBoardStore();
   const profile = useSessionStore((s) => s.profile);
 
@@ -51,7 +55,12 @@ export function BoardScreen({ boardId }: BoardScreenProps) {
 
   return (
     <Box h="100dvh" display="flex" style={{ flexDirection: 'column' }}>
-      <BoardHeader title={view.title} members={members} />
+      <BoardHeader
+        title={view.title}
+        members={members}
+        onOpenLabels={() => setLabelsOpen(true)}
+        onOpenActivity={() => setActivityOpen(true)}
+      />
       <DndContext
         sensors={sensors}
         collisionDetection={closestCorners}
@@ -65,7 +74,11 @@ export function BoardScreen({ boardId }: BoardScreenProps) {
               strategy={horizontalListSortingStrategy}
             >
               {view.columns.map((column) => (
-                <ColumnView key={column.id} column={column} onOpenCard={setOpenCard} />
+                <ColumnView
+                  key={column.id}
+                  column={column}
+                  onOpenCard={(card) => setOpenCardId(card.id)}
+                />
               ))}
             </SortableContext>
             <Box w={290} miw={290}>
@@ -87,7 +100,13 @@ export function BoardScreen({ boardId }: BoardScreenProps) {
           {dragging.card && <CardItem card={dragging.card} onOpen={() => undefined} />}
         </DragOverlay>
       </DndContext>
-      {openCard && <CardModal card={openCard} onClose={() => setOpenCard(null)} />}
+      {openCardId && <CardModal cardId={openCardId} onClose={() => setOpenCardId(null)} />}
+      <LabelManager opened={labelsOpen} onClose={() => setLabelsOpen(false)} />
+      <ActivityFeed
+        boardId={boardId}
+        opened={activityOpen}
+        onClose={() => setActivityOpen(false)}
+      />
     </Box>
   );
 }
