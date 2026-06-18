@@ -1,4 +1,7 @@
 import type { Board, Card, ChecklistItem, Column } from '../../database/schema';
+import type { CommentView } from '../repositories/comments.repository';
+
+export type { CommentView };
 
 export class BoardCreatedEvent {
   constructor(
@@ -130,21 +133,11 @@ export class ChecklistItemDeletedEvent {
   ) {}
 }
 
-export interface CommentEventView {
-  id: string;
-  cardId: string;
-  authorId: string | null;
-  authorName: string;
-  authorColor: string;
-  body: string;
-  createdAt: Date;
-}
-
 export class CommentCreatedEvent {
   constructor(
     public readonly boardId: string,
     public readonly cardId: string,
-    public readonly comment: CommentEventView,
+    public readonly comment: CommentView,
     public readonly actorId: string,
   ) {}
 }

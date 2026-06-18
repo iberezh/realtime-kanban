@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Combobox, Group, Textarea, useCombobox } from '@mantine/core';
+import { Button, Combobox, Group, Text, Textarea, useCombobox } from '@mantine/core';
 import { useState } from 'react';
 import { useBoardStore } from '@/stores/board-store';
 
@@ -16,6 +16,7 @@ export function CommentComposer({ onSubmit }: CommentComposerProps) {
   const combobox = useCombobox();
   const [value, setValue] = useState('');
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   // name → userId for everyone the author has picked from the dropdown.
   const [picked, setPicked] = useState<Record<string, string>>({});
 
@@ -53,10 +54,13 @@ export function CommentComposer({ onSubmit }: CommentComposerProps) {
       .filter(([name]) => body.includes(`@${name}`))
       .map(([, id]) => id);
     setBusy(true);
+    setError(null);
     try {
       await onSubmit(body, [...new Set(ids)]);
       setValue('');
       setPicked({});
+    } catch {
+      setError('Could not post your comment. Try again.');
     } finally {
       setBusy(false);
     }
@@ -82,7 +86,10 @@ export function CommentComposer({ onSubmit }: CommentComposerProps) {
           ))}
         </Combobox.Options>
       </Combobox.Dropdown>
-      <Group justify="flex-end" mt="xs">
+      <Group justify="space-between" mt="xs">
+        <Text size="xs" c="red">
+          {error}
+        </Text>
         <Button size="xs" loading={busy} onClick={submit}>
           Comment
         </Button>

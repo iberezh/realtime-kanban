@@ -21,12 +21,13 @@ function isCommentEvent(value: unknown): value is CommentEvent {
 export function CardComments({ cardId }: { cardId: string }) {
   const userId = useSessionStore((state) => state.profile?.user.id);
   const [comments, setComments] = useState<CommentView[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
     listComments(cardId).then(
       (list) => active && setComments(list),
-      () => undefined,
+      () => active && setError('Could not load comments.'),
     );
 
     const socket = getSocket();
@@ -84,13 +85,22 @@ export function CardComments({ cardId }: { cardId: string }) {
               variant="subtle"
               color="red"
               aria-label="Delete comment"
-              onClick={() => void deleteComment(comment.id).catch(() => undefined)}
+              onClick={() =>
+                void deleteComment(comment.id).catch(() =>
+                  setError('Could not delete the comment.'),
+                )
+              }
             >
               ×
             </ActionIcon>
           )}
         </Group>
       ))}
+      {error && (
+        <Text size="xs" c="red">
+          {error}
+        </Text>
+      )}
       <CommentComposer onSubmit={post} />
     </Stack>
   );

@@ -19,7 +19,7 @@ import {
   ColumnUpdatedEvent,
   CommentCreatedEvent,
   CommentDeletedEvent,
-  type CommentEventView,
+  type CommentView,
 } from '../kanban/events/kanban.events';
 
 /** The wire protocol: every domain event becomes one `board:event` message in the board's room. */
@@ -41,7 +41,7 @@ export type WireEvent =
   | { type: 'checklist.item_added'; boardId: string; cardId: string; item: ChecklistItem }
   | { type: 'checklist.item_updated'; boardId: string; cardId: string; item: ChecklistItem }
   | { type: 'checklist.item_deleted'; boardId: string; cardId: string; itemId: string }
-  | { type: 'comment.created'; boardId: string; cardId: string; comment: CommentEventView }
+  | { type: 'comment.created'; boardId: string; cardId: string; comment: CommentView }
   | { type: 'comment.deleted'; boardId: string; cardId: string; commentId: string };
 
 export type DomainEvent =
