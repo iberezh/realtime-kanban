@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
+import { BillingModule } from './billing/billing.module';
 import { validateEnv } from './config/env.validation';
 import { DatabaseModule } from './database/database.module';
 import { HealthModule } from './health/health.module';
@@ -19,6 +20,7 @@ import { ShareModule } from './share/share.module';
     DatabaseModule,
     AuthModule,
     HealthModule,
+    BillingModule,
     KanbanModule,
     LabelsModule,
     RealtimeModule,

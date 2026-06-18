@@ -1,5 +1,5 @@
 import { plainToInstance } from 'class-transformer';
-import { IsInt, IsString, Max, Min, MinLength, validateSync } from 'class-validator';
+import { IsInt, IsOptional, IsString, Max, Min, MinLength, validateSync } from 'class-validator';
 
 export class EnvironmentVariables {
   @IsInt()
@@ -18,6 +18,28 @@ export class EnvironmentVariables {
   @IsString()
   @MinLength(16)
   JWT_SECRET!: string;
+
+  /** Public app origin used for billing return URLs. Falls back to CORS_ORIGIN. */
+  @IsString()
+  @IsOptional()
+  APP_URL?: string;
+
+  /** Stripe billing — all optional; when STRIPE_SECRET_KEY is absent the mock provider runs. */
+  @IsString()
+  @IsOptional()
+  STRIPE_SECRET_KEY?: string;
+
+  @IsString()
+  @IsOptional()
+  STRIPE_WEBHOOK_SECRET?: string;
+
+  @IsString()
+  @IsOptional()
+  STRIPE_PRICE_PRO?: string;
+
+  @IsString()
+  @IsOptional()
+  STRIPE_PRICE_BUSINESS?: string;
 }
 
 export function validateEnv(config: Record<string, unknown>): EnvironmentVariables {

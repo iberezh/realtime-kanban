@@ -1,5 +1,7 @@
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { CommandHandler, EventBus, type ICommandHandler } from '@nestjs/cqrs';
+import { AccountsRepository } from '../../billing/accounts.repository';
+import { PLAN_LIMITS, planOf } from '../../billing/plan.limits';
 import type { Board } from '../../database/schema';
 import { BoardCreatedEvent, BoardDeletedEvent, BoardRenamedEvent } from '../events/kanban.events';
 import { BoardsRepository } from '../repositories/boards.repository';
@@ -9,10 +11,18 @@ import { CreateBoardCommand, DeleteBoardCommand, RenameBoardCommand } from './bo
 export class CreateBoardHandler implements ICommandHandler<CreateBoardCommand, Board> {
   constructor(
     private readonly boards: BoardsRepository,
+    private readonly accounts: AccountsRepository,
     private readonly eventBus: EventBus,
   ) {}
 
   async execute(command: CreateBoardCommand): Promise<Board> {
+    const plan = planOf(await this.accounts.findById(command.accountId));
+    const limit = PLAN_LIMITS[plan].boards;
+    if ((await this.boards.countByAccount(command.accountId)) >= limit) {
+      throw new ForbiddenException(
+        `Your ${plan} plan allows ${limit} board${limit === 1 ? '' : 's'}. Upgrade for more.`,
+      );
+    }
     const board = await this.boards.create(command.title, command.accountId);
     this.eventBus.publish(new BoardCreatedEvent(board, command.actorId));
     return board;

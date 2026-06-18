@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { asc, eq } from 'drizzle-orm';
+import { asc, count, eq } from 'drizzle-orm';
 import { type Database, DRIZZLE } from '../../database/database.module';
 import { type Board, boards, columns } from '../../database/schema';
 
@@ -34,6 +34,14 @@ export class BoardsRepository {
       .from(boards)
       .where(eq(boards.accountId, accountId))
       .orderBy(asc(boards.createdAt));
+  }
+
+  async countByAccount(accountId: string): Promise<number> {
+    const [row] = await this.db
+      .select({ value: count() })
+      .from(boards)
+      .where(eq(boards.accountId, accountId));
+    return row?.value ?? 0;
   }
 
   async rename(id: string, title: string): Promise<Board | null> {
