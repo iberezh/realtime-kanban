@@ -7,6 +7,7 @@ import { DatabaseModule } from './database/database.module';
 import { HealthModule } from './health/health.module';
 import { KanbanModule } from './kanban/kanban.module';
 import { LabelsModule } from './labels/labels.module';
+import { NotificationsModule } from './notifications/notifications.module';
 import { RealtimeModule } from './realtime/realtime.module';
 import { ShareModule } from './share/share.module';
 
@@ -25,6 +26,7 @@ import { ShareModule } from './share/share.module';
     LabelsModule,
     RealtimeModule,
     ShareModule,
+    NotificationsModule,
   ],
 })
 export class AppModule {}

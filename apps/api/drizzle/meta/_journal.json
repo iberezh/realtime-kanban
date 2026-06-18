@@ -50,6 +50,13 @@
       "when": 1781799342814,
       "tag": "0006_lumpy_dust",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1781800765253,
+      "tag": "0007_colossal_madelyne_pryor",
+      "breakpoints": true
     }
   ]
 }

@@ -168,6 +168,35 @@ export const shareLinks = pgTable(
   (table) => [index('share_links_board_idx').on(table.boardId)],
 );
 
+export const comments = pgTable(
+  'comments',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    cardId: uuid('card_id')
+      .notNull()
+      .references(() => cards.id, { onDelete: 'cascade' }),
+    authorId: uuid('author_id').references(() => users.id, { onDelete: 'set null' }),
+    body: text('body').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index('comments_card_created_idx').on(table.cardId, table.createdAt)],
+);
+
+export const notifications = pgTable(
+  'notifications',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    type: text('type').notNull(),
+    data: jsonb('data').notNull().default({}),
+    readAt: timestamp('read_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index('notifications_user_created_idx').on(table.userId, table.createdAt)],
+);
+
 export type Account = typeof accounts.$inferSelect;
 export type User = typeof users.$inferSelect;
 export type Membership = typeof memberships.$inferSelect;
@@ -179,3 +208,5 @@ export type CardLabel = typeof cardLabels.$inferSelect;
 export type ChecklistItem = typeof checklistItems.$inferSelect;
 export type Activity = typeof activity.$inferSelect;
 export type ShareLink = typeof shareLinks.$inferSelect;
+export type Comment = typeof comments.$inferSelect;
+export type Notification = typeof notifications.$inferSelect;

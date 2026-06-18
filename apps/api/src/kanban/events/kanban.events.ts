@@ -129,3 +129,31 @@ export class ChecklistItemDeletedEvent {
     public readonly actorId: string,
   ) {}
 }
+
+export interface CommentEventView {
+  id: string;
+  cardId: string;
+  authorId: string | null;
+  authorName: string;
+  authorColor: string;
+  body: string;
+  createdAt: Date;
+}
+
+export class CommentCreatedEvent {
+  constructor(
+    public readonly boardId: string,
+    public readonly cardId: string,
+    public readonly comment: CommentEventView,
+    public readonly actorId: string,
+  ) {}
+}
+
+export class CommentDeletedEvent {
+  constructor(
+    public readonly boardId: string,
+    public readonly cardId: string,
+    public readonly commentId: string,
+    public readonly actorId: string,
+  ) {}
+}

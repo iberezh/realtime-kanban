@@ -17,6 +17,7 @@ import {
   ColumnMovedEvent,
   ColumnRenamedEvent,
   ColumnUpdatedEvent,
+  CommentCreatedEvent,
 } from '../events/kanban.events';
 import { ActivityRepository } from '../repositories/activity.repository';
 
@@ -40,7 +41,8 @@ type DomainEvent =
   | CardAssigneeChangedEvent
   | ChecklistItemAddedEvent
   | ChecklistItemUpdatedEvent
-  | ChecklistItemDeletedEvent;
+  | ChecklistItemDeletedEvent
+  | CommentCreatedEvent;
 
 function getBoardId(event: DomainEvent): string {
   if (event instanceof BoardCreatedEvent || event instanceof BoardRenamedEvent) {
@@ -67,6 +69,7 @@ function getBoardId(event: DomainEvent): string {
   ChecklistItemAddedEvent,
   ChecklistItemUpdatedEvent,
   ChecklistItemDeletedEvent,
+  CommentCreatedEvent,
 )
 export class ActivityProjection implements IEventHandler<DomainEvent> {
   constructor(private readonly activityRepo: ActivityRepository) {}
