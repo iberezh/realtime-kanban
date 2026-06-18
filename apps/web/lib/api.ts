@@ -1,9 +1,15 @@
-import type { Board, BoardView, Card, Column } from './types';
+import type { Board, BoardView, Card, Column, PublicProfile } from './types';
 
 export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api/v1';
 
 /** Every REST path in one place — the only spot that knows the URL shapes. */
 export const ENDPOINTS = {
+  // Auth
+  authSignup: '/auth/signup',
+  authLogin: '/auth/login',
+  authLogout: '/auth/logout',
+  authMe: '/auth/me',
+  // Boards
   boards: '/boards',
   board: (boardId: string) => `/boards/${boardId}`,
   boardColumns: (boardId: string) => `/boards/${boardId}/columns`,
@@ -17,6 +23,7 @@ export const ENDPOINTS = {
 async function api<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${API_URL}${path}`, {
     ...init,
+    credentials: 'include',
     headers: { 'content-type': 'application/json', ...init?.headers },
   });
   if (!response.ok) {
@@ -26,6 +33,30 @@ async function api<T>(path: string, init?: RequestInit): Promise<T> {
   return response.status === 204 ? (undefined as T) : ((await response.json()) as T);
 }
 
+// Auth
+export interface SignupPayload {
+  email: string;
+  password: string;
+  name: string;
+  accountName: string;
+}
+
+export interface LoginPayload {
+  email: string;
+  password: string;
+}
+
+export const signup = (payload: SignupPayload): Promise<PublicProfile> =>
+  api(ENDPOINTS.authSignup, { method: 'POST', body: JSON.stringify(payload) });
+
+export const login = (payload: LoginPayload): Promise<PublicProfile> =>
+  api(ENDPOINTS.authLogin, { method: 'POST', body: JSON.stringify(payload) });
+
+export const logout = (): Promise<void> => api(ENDPOINTS.authLogout, { method: 'POST' });
+
+export const getMe = (): Promise<PublicProfile> => api(ENDPOINTS.authMe);
+
+// Boards
 export const listBoards = (): Promise<Board[]> => api(ENDPOINTS.boards);
 
 export const createBoard = (title: string): Promise<Board> =>

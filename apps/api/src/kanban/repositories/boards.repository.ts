@@ -7,11 +7,9 @@ import { type Board, boards } from '../../database/schema';
 export class BoardsRepository {
   constructor(@Inject(DRIZZLE) private readonly db: Database) {}
 
-  async create(title: string): Promise<Board> {
-    const [board] = await this.db.insert(boards).values({ title }).returning();
-    if (!board) {
-      throw new Error('Board insert returned no row');
-    }
+  async create(title: string, accountId: string): Promise<Board> {
+    const [board] = await this.db.insert(boards).values({ title, accountId }).returning();
+    if (!board) throw new Error('Board insert returned no row');
     return board;
   }
 
@@ -20,8 +18,12 @@ export class BoardsRepository {
     return board ?? null;
   }
 
-  async list(): Promise<Board[]> {
-    return this.db.select().from(boards).orderBy(asc(boards.createdAt));
+  async listByAccount(accountId: string): Promise<Board[]> {
+    return this.db
+      .select()
+      .from(boards)
+      .where(eq(boards.accountId, accountId))
+      .orderBy(asc(boards.createdAt));
   }
 
   async rename(id: string, title: string): Promise<Board | null> {

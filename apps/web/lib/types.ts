@@ -1,5 +1,23 @@
 /** Mirrors the API's database rows and wire protocol (apps/api/src/realtime/wire.ts). */
 
+export interface UserProfile {
+  id: string;
+  email: string;
+  name: string;
+  color: string;
+}
+
+export interface AccountProfile {
+  id: string;
+  name: string;
+  plan: string;
+}
+
+export interface PublicProfile {
+  user: UserProfile;
+  account: AccountProfile;
+}
+
 export interface Board {
   id: string;
   title: string;

@@ -13,6 +13,11 @@ export class EnvironmentVariables {
   @IsString()
   @MinLength(1)
   DATABASE_URL!: string;
+
+  /** Signs and verifies JWTs. Must be at least 16 characters. */
+  @IsString()
+  @MinLength(16)
+  JWT_SECRET!: string;
 }
 
 export function validateEnv(config: Record<string, unknown>): EnvironmentVariables {

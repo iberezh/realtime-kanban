@@ -1,43 +1,32 @@
 'use client';
 
 import { Alert, Box, Center, Group, Loader, ScrollArea, Text } from '@mantine/core';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useBoard } from '@/hooks/use-board';
 import { createColumn } from '@/lib/api';
-import { loadIdentity, saveIdentity } from '@/lib/identity';
 import type { Card, Identity } from '@/lib/types';
 import { useBoardStore } from '@/stores/board-store';
+import { useSessionStore } from '@/stores/session-store';
 import { BoardHeader } from './board-header';
 import { CardModal } from './card-modal';
 import { ColumnView } from './column-view';
 import { InlineAdd } from './inline-add';
-import { JoinForm } from './join-form';
 
-export function BoardScreen({ boardId }: { boardId: string }) {
-  const [identity, setIdentity] = useState<Identity | null>(null);
-  const [ready, setReady] = useState(false);
+interface BoardScreenProps {
+  boardId: string;
+}
+
+export function BoardScreen({ boardId }: BoardScreenProps) {
   const [openCard, setOpenCard] = useState<Card | null>(null);
   const { view, members, deleted, error } = useBoardStore();
+  const profile = useSessionStore((s) => s.profile);
+
+  const identity: Identity | null = profile
+    ? { name: profile.user.name, color: profile.user.color }
+    : null;
+
   useBoard(boardId, identity);
 
-  useEffect(() => {
-    setIdentity(loadIdentity());
-    setReady(true);
-  }, []);
-
-  if (!ready) {
-    return null;
-  }
-  if (!identity) {
-    return (
-      <JoinForm
-        onJoin={(value) => {
-          saveIdentity(value);
-          setIdentity(value);
-        }}
-      />
-    );
-  }
   if (deleted) {
     return (
       <Center h="100dvh">

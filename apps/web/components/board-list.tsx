@@ -43,7 +43,7 @@ export function BoardList() {
           <MantineCard
             key={board.id}
             component={Link}
-            href={`/board/${board.id}`}
+            href={`/app/board/${board.id}`}
             withBorder
             radius="md"
             padding="lg"
