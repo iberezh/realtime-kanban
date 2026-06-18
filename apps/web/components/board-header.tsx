@@ -10,9 +10,16 @@ interface BoardHeaderProps {
   members: Member[];
   onOpenLabels: () => void;
   onOpenActivity: () => void;
+  onOpenShare: () => void;
 }
 
-export function BoardHeader({ title, members, onOpenLabels, onOpenActivity }: BoardHeaderProps) {
+export function BoardHeader({
+  title,
+  members,
+  onOpenLabels,
+  onOpenActivity,
+  onOpenShare,
+}: BoardHeaderProps) {
   return (
     <Group justify="space-between" px="lg" py="sm">
       <Group gap="md">
@@ -27,6 +34,9 @@ export function BoardHeader({ title, members, onOpenLabels, onOpenActivity }: Bo
         </Button>
         <Button variant="subtle" size="xs" onClick={onOpenActivity}>
           Activity
+        </Button>
+        <Button size="xs" onClick={onOpenShare}>
+          Share
         </Button>
         <PresenceAvatars members={members} />
       </Group>

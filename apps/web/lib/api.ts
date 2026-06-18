@@ -26,6 +26,10 @@ export const ENDPOINTS = {
   label: (labelId: string) => `/labels/${labelId}`,
   members: '/members',
   boardActivity: (boardId: string) => `/boards/${boardId}/activity`,
+  // Share links
+  boardShareLinks: (boardId: string) => `/boards/${boardId}/share-links`,
+  shareLink: (id: string) => `/share-links/${id}`,
+  resolveShare: (token: string) => `/share/${token}`,
 } as const;
 
 export async function api<T>(path: string, init?: RequestInit): Promise<T> {

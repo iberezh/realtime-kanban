@@ -81,6 +81,19 @@ export interface BoardView extends Board {
   columns: ColumnView[];
 }
 
+export interface ShareLink {
+  id: string;
+  boardId: string;
+  token: string;
+  createdBy: string | null;
+  createdAt: string;
+}
+
+/** A board resolved from a public share token: the board plus the labels its cards reference. */
+export interface SharedBoardView extends BoardView {
+  labels: Label[];
+}
+
 export interface Member {
   socketId: string;
   name: string;
