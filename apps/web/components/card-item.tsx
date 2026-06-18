@@ -43,15 +43,24 @@ export function CardItem({ card, onOpen }: CardItemProps) {
             {card.description}
           </Text>
         )}
-        {(card.dueAt || assignee) && (
+        {(card.dueAt || assignee || card.checklist.length > 0) && (
           <Group justify="space-between" mt={2}>
-            {card.dueAt ? (
-              <Badge size="sm" variant="light" color={isOverdue(card.dueAt) ? 'red' : 'gray'}>
-                {dueLabel(card.dueAt)}
-              </Badge>
-            ) : (
-              <span />
-            )}
+            <Group gap={6}>
+              {card.dueAt && (
+                <Badge size="sm" variant="light" color={isOverdue(card.dueAt) ? 'red' : 'gray'}>
+                  {dueLabel(card.dueAt)}
+                </Badge>
+              )}
+              {card.checklist.length > 0 && (
+                <Badge
+                  size="sm"
+                  variant="light"
+                  color={card.checklist.every((item) => item.done) ? 'teal' : 'gray'}
+                >
+                  ☑ {card.checklist.filter((item) => item.done).length}/{card.checklist.length}
+                </Badge>
+              )}
+            </Group>
             {assignee && (
               <Tooltip label={assignee.name} withArrow>
                 <Avatar
