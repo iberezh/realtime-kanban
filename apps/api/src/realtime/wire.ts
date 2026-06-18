@@ -1,4 +1,4 @@
-import type { Board, Card, Column } from '../database/schema';
+import type { Board, Card, ChecklistItem, Column } from '../database/schema';
 import {
   BoardDeletedEvent,
   BoardRenamedEvent,
@@ -9,6 +9,9 @@ import {
   CardLabelDetachedEvent,
   CardMovedEvent,
   CardUpdatedEvent,
+  ChecklistItemAddedEvent,
+  ChecklistItemDeletedEvent,
+  ChecklistItemUpdatedEvent,
   ColumnCreatedEvent,
   ColumnDeletedEvent,
   ColumnMovedEvent,
@@ -31,7 +34,10 @@ export type WireEvent =
   | { type: 'card.deleted'; boardId: string; columnId: string; cardId: string }
   | { type: 'card.label_attached'; boardId: string; cardId: string; labelId: string }
   | { type: 'card.label_detached'; boardId: string; cardId: string; labelId: string }
-  | { type: 'card.assignee_changed'; boardId: string; card: Card };
+  | { type: 'card.assignee_changed'; boardId: string; card: Card }
+  | { type: 'checklist.item_added'; boardId: string; cardId: string; item: ChecklistItem }
+  | { type: 'checklist.item_updated'; boardId: string; cardId: string; item: ChecklistItem }
+  | { type: 'checklist.item_deleted'; boardId: string; cardId: string; itemId: string };
 
 export type DomainEvent =
   | BoardRenamedEvent
@@ -47,7 +53,10 @@ export type DomainEvent =
   | CardDeletedEvent
   | CardLabelAttachedEvent
   | CardLabelDetachedEvent
-  | CardAssigneeChangedEvent;
+  | CardAssigneeChangedEvent
+  | ChecklistItemAddedEvent
+  | ChecklistItemUpdatedEvent
+  | ChecklistItemDeletedEvent;
 
 type DomainEventClass<E extends DomainEvent = DomainEvent> = new (...args: never[]) => E;
 
@@ -112,6 +121,24 @@ register(CardAssigneeChangedEvent, (e) => ({
   type: 'card.assignee_changed',
   boardId: e.boardId,
   card: e.card,
+}));
+register(ChecklistItemAddedEvent, (e) => ({
+  type: 'checklist.item_added',
+  boardId: e.boardId,
+  cardId: e.cardId,
+  item: e.item,
+}));
+register(ChecklistItemUpdatedEvent, (e) => ({
+  type: 'checklist.item_updated',
+  boardId: e.boardId,
+  cardId: e.cardId,
+  item: e.item,
+}));
+register(ChecklistItemDeletedEvent, (e) => ({
+  type: 'checklist.item_deleted',
+  boardId: e.boardId,
+  cardId: e.cardId,
+  itemId: e.itemId,
 }));
 
 /** Single source for the relay's @EventsHandler subscription list. */

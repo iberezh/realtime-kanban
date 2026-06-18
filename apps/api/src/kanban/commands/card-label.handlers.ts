@@ -5,21 +5,8 @@ import { CardLabelAttachedEvent, CardLabelDetachedEvent } from '../events/kanban
 import { BoardsRepository } from '../repositories/boards.repository';
 import { CardLabelsRepository } from '../repositories/card-labels.repository';
 import { CardsRepository } from '../repositories/cards.repository';
+import { authorizeCardOnAccount } from './authorize-card';
 import { AttachLabelCommand, DetachLabelCommand } from './card-label.commands';
-
-async function authorizeCardOnAccount(
-  cards: CardsRepository,
-  boards: BoardsRepository,
-  cardId: string,
-  accountId: string,
-): Promise<{ boardId: string }> {
-  const card = await cards.findById(cardId);
-  if (!card) throw new NotFoundException(`Card ${cardId} not found`);
-  const board = await boards.findByColumnId(card.columnId);
-  if (!board) throw new NotFoundException('Board not found');
-  if (board.accountId !== accountId) throw new ForbiddenException();
-  return { boardId: board.id };
-}
 
 @CommandHandler(AttachLabelCommand)
 export class AttachLabelHandler implements ICommandHandler<AttachLabelCommand, void> {

@@ -1,4 +1,4 @@
-import type { Board, Card, Column } from '../../database/schema';
+import type { Board, Card, ChecklistItem, Column } from '../../database/schema';
 
 export class BoardCreatedEvent {
   constructor(
@@ -102,6 +102,30 @@ export class CardAssigneeChangedEvent {
   constructor(
     public readonly boardId: string,
     public readonly card: Card,
+    public readonly actorId: string,
+  ) {}
+}
+export class ChecklistItemAddedEvent {
+  constructor(
+    public readonly boardId: string,
+    public readonly cardId: string,
+    public readonly item: ChecklistItem,
+    public readonly actorId: string,
+  ) {}
+}
+export class ChecklistItemUpdatedEvent {
+  constructor(
+    public readonly boardId: string,
+    public readonly cardId: string,
+    public readonly item: ChecklistItem,
+    public readonly actorId: string,
+  ) {}
+}
+export class ChecklistItemDeletedEvent {
+  constructor(
+    public readonly boardId: string,
+    public readonly cardId: string,
+    public readonly itemId: string,
     public readonly actorId: string,
   ) {}
 }

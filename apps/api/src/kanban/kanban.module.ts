@@ -17,6 +17,11 @@ import {
 } from './commands/card.handlers';
 import { AttachLabelHandler, DetachLabelHandler } from './commands/card-label.handlers';
 import {
+  AddChecklistItemHandler,
+  DeleteChecklistItemHandler,
+  UpdateChecklistItemHandler,
+} from './commands/checklist.handlers';
+import {
   CreateColumnHandler,
   DeleteColumnHandler,
   MoveColumnHandler,
@@ -26,6 +31,7 @@ import {
 import { ActivityController } from './controllers/activity.controller';
 import { BoardsController } from './controllers/boards.controller';
 import { CardsController } from './controllers/cards.controller';
+import { ChecklistController } from './controllers/checklist.controller';
 import { ColumnsController } from './controllers/columns.controller';
 import { MembersController } from './controllers/members.controller';
 import { ListBoardActivityHandler } from './queries/activity.query-handlers';
@@ -35,6 +41,7 @@ import { ActivityRepository } from './repositories/activity.repository';
 import { BoardsRepository } from './repositories/boards.repository';
 import { CardLabelsRepository } from './repositories/card-labels.repository';
 import { CardsRepository } from './repositories/cards.repository';
+import { ChecklistRepository } from './repositories/checklist.repository';
 import { ColumnsRepository } from './repositories/columns.repository';
 import { MembersRepository } from './repositories/members.repository';
 
@@ -54,6 +61,9 @@ const commandHandlers = [
   AttachLabelHandler,
   DetachLabelHandler,
   SetCardAssigneeHandler,
+  AddChecklistItemHandler,
+  UpdateChecklistItemHandler,
+  DeleteChecklistItemHandler,
 ];
 
 const queryHandlers = [
@@ -69,6 +79,7 @@ const queryHandlers = [
     BoardsController,
     ColumnsController,
     CardsController,
+    ChecklistController,
     MembersController,
     ActivityController,
   ],
@@ -77,12 +88,19 @@ const queryHandlers = [
     ColumnsRepository,
     CardsRepository,
     CardLabelsRepository,
+    ChecklistRepository,
     MembersRepository,
     ActivityRepository,
     ActivityProjection,
     ...commandHandlers,
     ...queryHandlers,
   ],
-  exports: [BoardsRepository, ColumnsRepository, CardsRepository, CardLabelsRepository],
+  exports: [
+    BoardsRepository,
+    ColumnsRepository,
+    CardsRepository,
+    CardLabelsRepository,
+    ChecklistRepository,
+  ],
 })
 export class KanbanModule {}

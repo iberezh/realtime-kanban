@@ -9,6 +9,9 @@ import {
   CardLabelDetachedEvent,
   CardMovedEvent,
   CardUpdatedEvent,
+  ChecklistItemAddedEvent,
+  ChecklistItemDeletedEvent,
+  ChecklistItemUpdatedEvent,
   ColumnCreatedEvent,
   ColumnDeletedEvent,
   ColumnMovedEvent,
@@ -34,7 +37,10 @@ type DomainEvent =
   | CardDeletedEvent
   | CardLabelAttachedEvent
   | CardLabelDetachedEvent
-  | CardAssigneeChangedEvent;
+  | CardAssigneeChangedEvent
+  | ChecklistItemAddedEvent
+  | ChecklistItemUpdatedEvent
+  | ChecklistItemDeletedEvent;
 
 function getBoardId(event: DomainEvent): string {
   if (event instanceof BoardCreatedEvent || event instanceof BoardRenamedEvent) {
@@ -58,6 +64,9 @@ function getBoardId(event: DomainEvent): string {
   CardLabelAttachedEvent,
   CardLabelDetachedEvent,
   CardAssigneeChangedEvent,
+  ChecklistItemAddedEvent,
+  ChecklistItemUpdatedEvent,
+  ChecklistItemDeletedEvent,
 )
 export class ActivityProjection implements IEventHandler<DomainEvent> {
   constructor(private readonly activityRepo: ActivityRepository) {}
