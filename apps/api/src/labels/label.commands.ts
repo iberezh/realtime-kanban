@@ -1,21 +1,22 @@
-export class CreateBoardCommand {
+export class CreateLabelCommand {
   constructor(
-    public readonly title: string,
     public readonly accountId: string,
     public readonly actorId: string,
+    public readonly name: string,
+    public readonly color: string,
   ) {}
 }
-export class RenameBoardCommand {
+export class RenameLabelCommand {
   constructor(
-    public readonly boardId: string,
-    public readonly title: string,
+    public readonly labelId: string,
     public readonly accountId: string,
     public readonly actorId: string,
+    public readonly name: string,
   ) {}
 }
-export class DeleteBoardCommand {
+export class DeleteLabelCommand {
   constructor(
-    public readonly boardId: string,
+    public readonly labelId: string,
     public readonly accountId: string,
     public readonly actorId: string,
   ) {}

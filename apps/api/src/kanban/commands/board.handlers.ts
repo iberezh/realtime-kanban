@@ -14,7 +14,7 @@ export class CreateBoardHandler implements ICommandHandler<CreateBoardCommand, B
 
   async execute(command: CreateBoardCommand): Promise<Board> {
     const board = await this.boards.create(command.title, command.accountId);
-    this.eventBus.publish(new BoardCreatedEvent(board));
+    this.eventBus.publish(new BoardCreatedEvent(board, command.actorId));
     return board;
   }
 }
@@ -34,7 +34,7 @@ export class RenameBoardHandler implements ICommandHandler<RenameBoardCommand, B
     const board = await this.boards.rename(command.boardId, command.title);
     if (!board) throw new NotFoundException(`Board ${command.boardId} not found`);
 
-    this.eventBus.publish(new BoardRenamedEvent(board));
+    this.eventBus.publish(new BoardRenamedEvent(board, command.actorId));
     return board;
   }
 }
@@ -54,6 +54,6 @@ export class DeleteBoardHandler implements ICommandHandler<DeleteBoardCommand, v
     const deleted = await this.boards.delete(command.boardId);
     if (!deleted) throw new NotFoundException(`Board ${command.boardId} not found`);
 
-    this.eventBus.publish(new BoardDeletedEvent(command.boardId));
+    this.eventBus.publish(new BoardDeletedEvent(command.boardId, command.actorId));
   }
 }

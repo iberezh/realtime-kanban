@@ -42,7 +42,7 @@ export class CreateCardHandler implements ICommandHandler<CreateCardCommand, Car
       description: command.description,
       rank,
     });
-    this.eventBus.publish(new CardCreatedEvent(column.boardId, card));
+    this.eventBus.publish(new CardCreatedEvent(column.boardId, card, command.actorId));
     return card;
   }
 }
@@ -69,7 +69,7 @@ export class UpdateCardHandler implements ICommandHandler<UpdateCardCommand, Car
     const card = await this.cards.update(command.cardId, command.patch);
     if (!card) throw new NotFoundException(`Card ${command.cardId} not found`);
 
-    this.eventBus.publish(new CardUpdatedEvent(column.boardId, card));
+    this.eventBus.publish(new CardUpdatedEvent(column.boardId, card, command.actorId));
     return card;
   }
 }
@@ -109,7 +109,7 @@ export class MoveCardHandler implements ICommandHandler<MoveCardCommand, Card> {
     const moved = await this.cards.move(card.id, target.id, rank);
     if (!moved) throw new NotFoundException(`Card ${command.cardId} not found`);
 
-    this.eventBus.publish(new CardMovedEvent(target.boardId, moved));
+    this.eventBus.publish(new CardMovedEvent(target.boardId, moved, command.actorId));
     return moved;
   }
 }
@@ -134,6 +134,8 @@ export class DeleteCardHandler implements ICommandHandler<DeleteCardCommand, voi
     if (!board || board.accountId !== command.accountId) throw new ForbiddenException();
 
     await this.cards.delete(card.id);
-    this.eventBus.publish(new CardDeletedEvent(column.boardId, column.id, card.id));
+    this.eventBus.publish(
+      new CardDeletedEvent(column.boardId, column.id, card.id, command.actorId),
+    );
   }
 }
