@@ -76,4 +76,21 @@ describe('Kanban API (integration)', () => {
     await agent.delete(`/api/v1/boards/${board.id}`).expect(204);
     await agent.get(`/api/v1/boards/${board.id}`).expect(404);
   });
+
+  it("forbids changing another account's column WIP limit", async () => {
+    const { body: board } = await agent
+      .post('/api/v1/boards')
+      .send({ title: 'Owned board' })
+      .expect(201);
+    const { body: column } = await agent
+      .post(`/api/v1/boards/${board.id}/columns`)
+      .send({ title: 'Todo' })
+      .expect(201);
+
+    const intruder = await authedAgent(app);
+    await intruder
+      .patch(`/api/v1/columns/${column.id}/wip-limit`)
+      .send({ wipLimit: 5 })
+      .expect(403);
+  });
 });

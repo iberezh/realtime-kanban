@@ -2,7 +2,7 @@
 
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { ActionIcon, Group, Menu, Paper, Stack, Text } from '@mantine/core';
+import { ActionIcon, Box, Group, Menu, Paper, Stack, Text } from '@mantine/core';
 import { useState } from 'react';
 import { createCard, deleteColumn } from '@/lib/api';
 import type { Card, ColumnView as ColumnViewType } from '@/lib/types';
@@ -23,8 +23,6 @@ export function ColumnView({ column, onOpenCard, cardMatches }: ColumnViewProps)
     data: { column },
   });
   const overLimit = column.wipLimit !== null && column.cards.length > column.wipLimit;
-  // WIP count reflects all cards; filtering only hides non-matching ones from view.
-  const visible = cardMatches ? column.cards.filter(cardMatches) : column.cards;
 
   return (
     <Paper
@@ -83,12 +81,15 @@ export function ColumnView({ column, onOpenCard, cardMatches }: ColumnViewProps)
           />
         </Group>
         <SortableContext
-          items={visible.map((card) => card.id)}
+          items={column.cards.map((card) => card.id)}
           strategy={verticalListSortingStrategy}
         >
+          {/* Keep every card in the sortable registry; filtering only hides them visually. */}
           <Stack gap="xs" mih={8}>
-            {visible.map((card) => (
-              <SortableCard key={card.id} card={card} onOpen={onOpenCard} />
+            {column.cards.map((card) => (
+              <Box key={card.id} display={cardMatches && !cardMatches(card) ? 'none' : undefined}>
+                <SortableCard card={card} onOpen={onOpenCard} />
+              </Box>
             ))}
           </Stack>
         </SortableContext>
