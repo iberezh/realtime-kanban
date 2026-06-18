@@ -10,6 +10,7 @@ import { InlineAdd } from './inline-add';
 export function BoardList() {
   const [boards, setBoards] = useState<Board[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [createError, setCreateError] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -60,11 +61,21 @@ export function BoardList() {
           No boards yet — create the first one.
         </Text>
       )}
+      {createError && (
+        <Alert color="orange" variant="light" mb="sm" title="Board limit reached">
+          {createError}
+        </Alert>
+      )}
       <InlineAdd
         placeholder="New board name"
         onAdd={async (title) => {
-          const board = await createBoard(title);
-          setBoards((current) => [...(current ?? []), board]);
+          try {
+            const board = await createBoard(title);
+            setBoards((current) => [...(current ?? []), board]);
+            setCreateError(null);
+          } catch (cause: unknown) {
+            setCreateError(cause instanceof Error ? cause.message : 'Could not create board');
+          }
         }}
       />
     </>

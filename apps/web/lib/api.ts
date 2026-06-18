@@ -30,6 +30,10 @@ export const ENDPOINTS = {
   boardShareLinks: (boardId: string) => `/boards/${boardId}/share-links`,
   shareLink: (id: string) => `/share-links/${id}`,
   resolveShare: (token: string) => `/share/${token}`,
+  // Billing
+  billingStatus: '/billing/status',
+  billingCheckout: '/billing/checkout',
+  billingPortal: '/billing/portal',
 } as const;
 
 export async function api<T>(path: string, init?: RequestInit): Promise<T> {

@@ -81,6 +81,22 @@ export interface BoardView extends Board {
   columns: ColumnView[];
 }
 
+export type Plan = 'free' | 'pro' | 'business';
+
+export interface PlanLimits {
+  boards: number;
+  activityDays: number;
+  guestLinks: boolean;
+  customLabels: boolean;
+}
+
+export interface BillingStatus {
+  plan: Plan;
+  mode: 'stripe' | 'mock';
+  limits: PlanLimits;
+  usage: { boards: number };
+}
+
 export interface ShareLink {
   id: string;
   boardId: string;

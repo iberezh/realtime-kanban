@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { logout } from '@/lib/api';
 import { useSessionStore } from '@/stores/session-store';
+import { BillingButton } from './billing-button';
 
 export function TopBar() {
   const router = useRouter();
@@ -27,6 +28,7 @@ export function TopBar() {
         Lane
       </Anchor>
       <Group gap="md">
+        <BillingButton />
         {profile && (
           <Text size="sm" c="dimmed">
             {profile.user.name}

@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, ColorInput, Group, Modal, Stack, Text, TextInput } from '@mantine/core';
+import { Alert, Button, ColorInput, Group, Modal, Stack, Text, TextInput } from '@mantine/core';
 import { useState } from 'react';
 import { createLabel, deleteLabel, listLabels, renameLabel } from '@/lib/workspace-api';
 import { useBoardStore } from '@/stores/board-store';
@@ -19,6 +19,7 @@ export function LabelManager({ opened, onClose }: LabelManagerProps) {
   const labels = useBoardStore((state) => state.labels);
   const [name, setName] = useState('');
   const [color, setColor] = useState(DEFAULT_COLOR);
+  const [error, setError] = useState<string | null>(null);
 
   const refresh = (): void => {
     // Actions are static — no need to subscribe to setLabels.
@@ -32,9 +33,14 @@ export function LabelManager({ opened, onClose }: LabelManagerProps) {
     if (!name.trim()) {
       return;
     }
-    await createLabel(name.trim(), color);
-    setName('');
-    refresh();
+    try {
+      await createLabel(name.trim(), color);
+      setName('');
+      setError(null);
+      refresh();
+    } catch (cause: unknown) {
+      setError(cause instanceof Error ? cause.message : 'Could not create label');
+    }
   };
   const rename = (id: string, value: string): void => {
     void renameLabel(id, value).then(refresh, () => undefined);
@@ -64,6 +70,11 @@ export function LabelManager({ opened, onClose }: LabelManagerProps) {
           />
           <Button onClick={add}>Add</Button>
         </Group>
+        {error && (
+          <Alert color="orange" variant="light">
+            {error}
+          </Alert>
+        )}
         {labels.length === 0 ? (
           <Text size="sm" c="dimmed">
             No labels yet.
