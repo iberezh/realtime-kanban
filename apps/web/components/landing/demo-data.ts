@@ -43,7 +43,7 @@ export const HERO_CARDS: Record<string, CardData> = {
     id: 'auth',
     chip: { label: 'Build', bg: '#efeaff', color: '#7c5cff' },
     title: 'Auth guard',
-    avatar: { initial: 'I', color: '#7c5cff' },
+    avatar: { initial: 'M', color: '#36c5a8' },
     code: 'LNE-21',
   },
 };
@@ -57,23 +57,31 @@ export const HERO_FRAMES: Frame[] = [
 
 export const HERO_TICKER: TickerLine[] = [
   { who: 'M', color: '#36c5a8', msg: 'Realtime, always in sync' },
-  { who: 'I', color: '#7c5cff', msg: 'Ivan created “Auth guard”' },
+  { who: 'I', color: '#7c5cff', msg: 'Ivan created “Auth guard”, assigned Mara' },
   { who: 'M', color: '#36c5a8', msg: 'Mara moved “Auth guard” to Doing' },
   { who: 'M', color: '#36c5a8', msg: 'Mara shipped “Auth guard” to Done ✓' },
 ];
 
 export const HERO_CURSORS: Record<string, CursorPos[]> = {
+  // Ivan opens the board, then creates and assigns "Auth guard" in Todo before drifting off.
+  ivan: [
+    { left: '64%', top: '30%' },
+    { left: '18%', top: '52%' },
+    { left: '40%', top: '34%' },
+    { left: '30%', top: '28%' },
+  ],
+  // Mara waits, then carries her assigned card through Doing into Done.
   mara: [
-    { left: '48%', top: '34%' },
-    { left: '20%', top: '56%' },
+    { left: '52%', top: '32%' },
+    { left: '44%', top: '40%' },
     { left: '49%', top: '56%' },
     { left: '78%', top: '56%' },
   ],
   alex: [
-    { left: '70%', top: '30%' },
-    { left: '34%', top: '42%' },
-    { left: '64%', top: '48%' },
-    { left: '30%', top: '32%' },
+    { left: '72%', top: '60%' },
+    { left: '60%', top: '66%' },
+    { left: '66%', top: '50%' },
+    { left: '74%', top: '62%' },
   ],
 };
 

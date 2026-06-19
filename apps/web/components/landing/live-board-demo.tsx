@@ -14,6 +14,7 @@ const PARK = { left: '50%', top: '40%' };
 export function LiveBoardDemo() {
   const step = useBoardLoop(HERO_FRAMES.length, 2400);
   const line = HERO_TICKER[step] ?? IDLE;
+  const ivan = HERO_CURSORS.ivan?.[step] ?? PARK;
   const mara = HERO_CURSORS.mara?.[step] ?? PARK;
   const alex = HERO_CURSORS.alex?.[step] ?? PARK;
 
@@ -45,6 +46,7 @@ export function LiveBoardDemo() {
           {line.msg}
         </motion.span>
       </div>
+      <DemoCursor color="#7c5cff" name="Ivan" pos={ivan} />
       <DemoCursor color="#36c5a8" name="Mara" pos={mara} />
       <DemoCursor color="#ff6b9d" name="Alex" pos={alex} />
     </div>
