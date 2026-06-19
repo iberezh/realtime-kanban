@@ -6,13 +6,18 @@ import type { BoardFilter, DueFilter } from '@/lib/card-filter';
 
 const DUE_VALUES: readonly DueFilter[] = ['all', 'has', 'overdue'];
 
+function parseDue(value: string | null): DueFilter {
+  return value !== null && (DUE_VALUES as readonly string[]).includes(value)
+    ? (value as DueFilter)
+    : 'all';
+}
+
 function parseFilter(params: URLSearchParams): BoardFilter {
-  const due = params.get('due') as DueFilter | null;
   return {
-    text: params.get('q') ?? '',
+    text: (params.get('q') ?? '').trim(),
     labelIds: params.getAll('label'),
     assigneeId: params.get('assignee'),
-    due: due && DUE_VALUES.includes(due) ? due : 'all',
+    due: parseDue(params.get('due')),
   };
 }
 

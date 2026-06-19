@@ -24,9 +24,13 @@ export function BoardFilterBar({ filter, onChange }: BoardFilterBarProps) {
   // Search is deferred: the query string updates only once typing pauses (300ms).
   const [text, setText] = useState(filter.text);
   const lastPushed = useRef(filter.text);
+  // Merge against the live filter, not the one captured when typing began — a label or
+  // assignee change during the debounce window must not be reverted when the push fires.
+  const filterRef = useRef(filter);
+  filterRef.current = filter;
   const pushText = useDebouncedCallback((value: string) => {
     lastPushed.current = value;
-    onChange({ ...filter, text: value });
+    onChange({ ...filterRef.current, text: value });
   }, 300);
 
   // Re-sync the input when the text changes from elsewhere (e.g. the Clear button).
