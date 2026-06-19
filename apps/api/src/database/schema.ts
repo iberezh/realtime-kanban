@@ -163,6 +163,7 @@ export const shareLinks = pgTable(
       .references(() => boards.id, { onDelete: 'cascade' }),
     token: text('token').notNull().unique(),
     createdBy: uuid('created_by').references(() => users.id, { onDelete: 'set null' }),
+    expiresAt: timestamp('expires_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [index('share_links_board_idx').on(table.boardId)],

@@ -3,6 +3,7 @@
 import {
   Anchor,
   Button,
+  Center,
   Container,
   Paper,
   PasswordInput,
@@ -14,6 +15,7 @@ import {
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
+import { Brand } from '@/components/brand';
 import { signup } from '@/lib/api';
 import { useSessionStore } from '@/stores/session-store';
 
@@ -50,6 +52,9 @@ export default function SignupPage() {
 
   return (
     <Container size={420} py={80}>
+      <Center mb="lg">
+        <Brand size={32} />
+      </Center>
       <Title order={2} mb={4} ta="center">
         Create your workspace
       </Title>

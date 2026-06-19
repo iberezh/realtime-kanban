@@ -3,6 +3,7 @@ export class CreateShareLinkCommand {
     public readonly boardId: string,
     public readonly accountId: string,
     public readonly userId: string,
+    public readonly expiresAt: Date | null,
   ) {}
 }
 

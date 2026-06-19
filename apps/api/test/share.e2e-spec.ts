@@ -51,6 +51,25 @@ describe('Share links (integration)', () => {
     await guest.get(`/api/v1/share/${link.token}`).expect(404);
   });
 
+  it('accepts a future expiry and rejects a past one', async () => {
+    const { body: board } = await agent
+      .post('/api/v1/boards')
+      .send({ title: 'Expiring board' })
+      .expect(201);
+
+    const future = new Date(Date.now() + 86_400_000).toISOString();
+    const { body: link } = await agent
+      .post(`/api/v1/boards/${board.id}/share-links`)
+      .send({ expiresAt: future })
+      .expect(201);
+    expect(new Date(link.expiresAt).toISOString()).toBe(future);
+
+    await agent
+      .post(`/api/v1/boards/${board.id}/share-links`)
+      .send({ expiresAt: '2020-01-01T00:00:00.000Z' })
+      .expect(400);
+  });
+
   it('rejects share-link management without a session', async () => {
     const { body: board } = await agent
       .post('/api/v1/boards')

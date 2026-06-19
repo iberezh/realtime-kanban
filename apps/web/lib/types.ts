@@ -113,6 +113,7 @@ export interface ShareLink {
   boardId: string;
   token: string;
   createdBy: string | null;
+  expiresAt: string | null;
   createdAt: string;
 }
 

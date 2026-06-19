@@ -7,7 +7,12 @@ export interface NewShareLink {
   boardId: string;
   token: string;
   createdBy: string | null;
+  expiresAt: Date | null;
 }
+
+/** A link is usable only if it exists and has not passed its expiry instant. */
+export const isShareLinkActive = (link: ShareLink | null): link is ShareLink =>
+  link !== null && (link.expiresAt === null || link.expiresAt.getTime() > Date.now());
 
 @Injectable()
 export class ShareLinkRepository {

@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   Delete,
   Get,
@@ -22,6 +23,7 @@ import { CurrentUser } from '../auth/current-user.decorator';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import type { ShareLink } from '../database/schema';
 import { CreateShareLinkCommand, RevokeShareLinkCommand } from './share.commands';
+import { CreateShareLinkDto } from './share.dto';
 import { ListBoardShareLinksQuery } from './share.queries';
 
 @ApiTags('share-links')
@@ -38,13 +40,21 @@ export class ShareLinksController {
   @ApiCreatedResponse({ description: 'A new public, read-only link for the board.' })
   create(
     @Param('boardId', ParseUUIDPipe) boardId: string,
+    @Body() dto: CreateShareLinkDto,
     @CurrentUser() ctx: AuthContext,
   ): Promise<ShareLink> {
-    return this.commandBus.execute(new CreateShareLinkCommand(boardId, ctx.accountId, ctx.userId));
+    return this.commandBus.execute(
+      new CreateShareLinkCommand(
+        boardId,
+        ctx.accountId,
+        ctx.userId,
+        dto.expiresAt ? new Date(dto.expiresAt) : null,
+      ),
+    );
   }
 
   @Get('boards/:boardId/share-links')
-  @ApiOkResponse({ description: 'Active share links for the board.' })
+  @ApiOkResponse({ description: 'All share links for the board, including expired ones.' })
   list(
     @Param('boardId', ParseUUIDPipe) boardId: string,
     @CurrentUser() ctx: AuthContext,

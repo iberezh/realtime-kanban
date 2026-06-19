@@ -19,6 +19,8 @@ export interface BillingProvider {
   readonly mode: 'stripe' | 'mock';
   checkout(account: Account, plan: PaidPlan): Promise<CheckoutResult>;
   portal(account: Account): Promise<CheckoutResult>;
+  /** Sync the plan from a completed Checkout Session on return, before the webhook lands. */
+  confirm(account: Account, sessionId: string): Promise<void>;
   handleWebhook(rawBody: Buffer, signature: string | undefined): Promise<void>;
 }
 

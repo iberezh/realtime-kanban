@@ -14,7 +14,7 @@ import {
   ResolveShareLinkQuery,
 } from './share.queries';
 import type { SharedBoardView } from './share.views';
-import { ShareLinkRepository } from './share-link.repository';
+import { isShareLinkActive, ShareLinkRepository } from './share-link.repository';
 
 @QueryHandler(ListBoardShareLinksQuery)
 export class ListBoardShareLinksHandler
@@ -51,7 +51,7 @@ export class ResolveShareLinkHandler
 
   async execute(query: ResolveShareLinkQuery): Promise<SharedBoardView> {
     const link = await this.shareLinks.findByToken(query.token);
-    const board = link && (await this.boards.findById(link.boardId));
+    const board = isShareLinkActive(link) ? await this.boards.findById(link.boardId) : null;
     if (!board) {
       throw new NotFoundException('This share link is no longer active');
     }
@@ -77,6 +77,6 @@ export class BoardIdForShareTokenHandler
 
   async execute(query: BoardIdForShareTokenQuery): Promise<string | null> {
     const link = await this.shareLinks.findByToken(query.token);
-    return link?.boardId ?? null;
+    return isShareLinkActive(link) ? link.boardId : null;
   }
 }

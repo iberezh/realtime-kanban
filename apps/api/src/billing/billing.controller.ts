@@ -15,7 +15,7 @@ import type { Request } from 'express';
 import type { AuthContext } from '../auth/auth.types';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { CheckoutDto } from './billing.dto';
+import { CheckoutDto, ConfirmDto } from './billing.dto';
 import { BillingService } from './billing.service';
 import type { BillingStatus, CheckoutResult } from './billing.types';
 
@@ -48,6 +48,15 @@ export class BillingController {
   @HttpCode(HttpStatus.OK)
   portal(@CurrentUser() ctx: AuthContext): Promise<CheckoutResult> {
     return this.billing.portal(ctx.accountId);
+  }
+
+  @Post('confirm')
+  @ApiCookieAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiOkResponse({ description: 'Plan synced from the returned Checkout Session.' })
+  @HttpCode(HttpStatus.OK)
+  confirm(@Body() dto: ConfirmDto, @CurrentUser() ctx: AuthContext): Promise<BillingStatus> {
+    return this.billing.confirm(ctx.accountId, dto.sessionId);
   }
 
   // Public: authenticated by the Stripe signature over the raw body, not a session.
