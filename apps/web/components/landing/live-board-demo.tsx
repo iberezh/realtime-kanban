@@ -1,4 +1,10 @@
+'use client';
+
+import { LayoutGroup, motion } from 'framer-motion';
 import demo from './demo.module.css';
+import { type CardData, DemoCard } from './demo-card';
+import { HERO_COLUMNS, HERO_MOVER, HERO_STATIC, HERO_TICKER } from './demo-data';
+import { useBoardLoop } from './use-board-loop';
 
 const Cursor = ({ cls, color, name }: { cls: string | undefined; color: string; name: string }) => (
   <div className={`${demo.cursor} ${cls}`}>
@@ -11,8 +17,16 @@ const Cursor = ({ cls, color, name }: { cls: string | undefined; color: string; 
   </div>
 );
 
-/** Self-playing board: a card lifts out of Doing and lands in Done while cursors roam. */
+/** Self-playing board: a card physically glides from Doing to Done while cursors roam. */
 export function LiveBoardDemo() {
+  const step = useBoardLoop(2, 2800);
+  const moverColumn = step === 1 ? 'done' : 'doing';
+  const cardsFor = (columnId: string): CardData[] => {
+    const base = HERO_STATIC[columnId] ?? [];
+    return moverColumn === columnId ? [HERO_MOVER, ...base] : base;
+  };
+  const line = step === 1 ? HERO_TICKER[1] : HERO_TICKER[0];
+
   return (
     <div className={demo.demo} aria-hidden="true">
       <div className={demo.bar}>
@@ -26,82 +40,36 @@ export function LiveBoardDemo() {
           <span className={demo.liveDot} />3 online
         </span>
       </div>
-      <div className={demo.cols}>
-        <div className={demo.col}>
-          <h4>
-            Todo <span>2</span>
-          </h4>
-          <div className={demo.kc}>
-            <span className={demo.chip} style={{ background: '#fff0e6', color: '#e0632a' }}>
-              Design
-            </span>
-            Onboarding flow
-            <div className={demo.foot}>
-              <span className={demo.miniAv} style={{ background: '#7c5cff' }}>
-                I
-              </span>
-              <span className={demo.key}>LNE-12</span>
-            </div>
-          </div>
-          <div className={demo.kc}>
-            Empty states
-            <div className={demo.foot}>
-              <span className={demo.miniAv} style={{ background: '#ff6b9d' }}>
-                A
-              </span>
-              <span className={demo.key}>LNE-19</span>
-            </div>
-          </div>
+      <LayoutGroup>
+        <div className={demo.cols}>
+          {HERO_COLUMNS.map((column) => {
+            const cards = cardsFor(column.id);
+            return (
+              <div key={column.id} className={demo.col}>
+                <h4>
+                  {column.title} <span>{cards.length}</span>
+                </h4>
+                {cards.map((card) => (
+                  <DemoCard key={card.id} card={card} />
+                ))}
+              </div>
+            );
+          })}
         </div>
-        <div className={demo.col}>
-          <h4>
-            Doing <span>1</span>
-          </h4>
-          <div className={`${demo.kc} ${demo.travelDoing}`}>
-            <span className={demo.chip} style={{ background: '#e4fbf3', color: '#1f9e85' }}>
-              Live
-            </span>
-            Presence avatars
-            <div className={demo.foot}>
-              <span className={demo.miniAv} style={{ background: '#36c5a8' }}>
-                M
-              </span>
-              <span className={demo.key}>LNE-08</span>
-            </div>
-          </div>
-        </div>
-        <div className={demo.col}>
-          <h4>
-            Done <span>2</span>
-          </h4>
-          <div className={`${demo.kc} ${demo.travelDone}`}>
-            <span className={demo.chip} style={{ background: '#e4fbf3', color: '#1f9e85' }}>
-              Live
-            </span>
-            Presence avatars
-            <div className={demo.foot}>
-              <span className={demo.miniAv} style={{ background: '#36c5a8' }}>
-                M
-              </span>
-              <span className={demo.key}>LNE-08</span>
-            </div>
-          </div>
-          <div className={demo.kc}>
-            Realtime sync
-            <div className={demo.foot}>
-              <span className={demo.miniAv} style={{ background: '#7c5cff' }}>
-                I
-              </span>
-              <span className={demo.key}>LNE-03</span>
-            </div>
-          </div>
-        </div>
-      </div>
+      </LayoutGroup>
       <div className={demo.ticker}>
-        <span className={demo.who} style={{ background: '#36c5a8' }}>
-          M
+        <span className={demo.who} style={{ background: line.color }}>
+          {line.who}
         </span>
-        <span className={demo.msg}>Mara moved “Presence avatars” to Done ✓</span>
+        <motion.span
+          key={step}
+          className={demo.msg}
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+        >
+          {line.msg}
+        </motion.span>
       </div>
       <Cursor cls={demo.curMara} color="#36c5a8" name="Mara" />
       <Cursor cls={demo.curAlex} color="#ff6b9d" name="Alex" />
