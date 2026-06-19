@@ -68,8 +68,8 @@
   background: rgba(255, 255, 255, 0.5);
   border-radius: 13px;
   padding: 9px;
-  /* Fixed so adding or removing a card never resizes the board. */
-  height: 230px;
+  /* Fixed so adding or removing a card never resizes the board; sized for two cards. */
+  height: 250px;
 }
 .col h4 {
   font-size: 11px;
