@@ -6,8 +6,9 @@ import { Alert, Box, Center, Group, Loader, ScrollArea, Text } from '@mantine/co
 import { useCallback, useMemo, useState } from 'react';
 import { useBoard } from '@/hooks/use-board';
 import { useBoardDnd } from '@/hooks/use-board-dnd';
+import { useBoardFilter } from '@/hooks/use-board-filter';
 import { createColumn } from '@/lib/api';
-import { type BoardFilter, cardMatchesFilter, EMPTY_FILTER } from '@/lib/card-filter';
+import { cardMatchesFilter } from '@/lib/card-filter';
 import type { Card, Identity } from '@/lib/types';
 import { useBoardStore } from '@/stores/board-store';
 import { useSessionStore } from '@/stores/session-store';
@@ -30,7 +31,7 @@ export function BoardScreen({ boardId }: BoardScreenProps) {
   const [labelsOpen, setLabelsOpen] = useState(false);
   const [activityOpen, setActivityOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
-  const [filter, setFilter] = useState<BoardFilter>(EMPTY_FILTER);
+  const { filter, setFilter } = useBoardFilter();
   // Subscribe per-field: a bare useBoardStore() re-renders on every mutation.
   const view = useBoardStore((s) => s.view);
   const members = useBoardStore((s) => s.members);
