@@ -1,8 +1,9 @@
 'use client';
 
-import { Anchor, Button, Group, Title } from '@mantine/core';
+import { Anchor, Button, Divider, Group, Title } from '@mantine/core';
 import Link from 'next/link';
 import type { Member } from '@/lib/types';
+import { Brand } from './brand';
 import { PresenceAvatars } from './presence-avatars';
 
 interface BoardHeaderProps {
@@ -23,6 +24,8 @@ export function BoardHeader({
   return (
     <Group justify="space-between" px="lg" py="sm">
       <Group gap="md">
+        <Brand size={24} href="/app" />
+        <Divider orientation="vertical" />
         <Anchor component={Link} href="/app" size="sm" c="dimmed">
           ← boards
         </Anchor>
