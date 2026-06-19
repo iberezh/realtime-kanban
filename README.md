@@ -2,7 +2,7 @@
 
 **Realtime team boards with guest links.** Drag a card and your whole team sees it move instantly; share a read-only link and clients watch progress live — no account needed. Lane is a production-shaped SaaS MVP: multi-tenant auth, realtime collaboration, plan-gated billing, and a marketing landing page, on a CQRS NestJS backend and a Next.js front end.
 
-![Lane demo](assets/demo.png)
+![Lane — realtime team boards with guest links](assets/landing.png)
 
 ## Features
 
@@ -16,6 +16,16 @@
 - **Plans & billing** — Free / Pro / Business via Stripe Checkout + customer portal + a signature-verified webhook, with a keyless mock provider for local runs. Limits are enforced server-side.
 - **Board tooling** — per-column WIP limits and text/label/assignee/due filtering mirrored to the URL.
 - **Marketing landing** — animated, SSR'd landing page at `/` with self-playing live-board demos and pricing.
+
+## Screenshots
+
+The board — realtime columns, cards, assignees, filtering, and live presence:
+
+![Lane board](assets/board.png)
+
+Plans, gated server-side:
+
+![Lane pricing](assets/pricing.png)
 
 ## Plans
 
