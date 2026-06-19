@@ -80,7 +80,8 @@ export class RotateShareLinkHandler implements ICommandHandler<RotateShareLinkCo
     }
     const rotated = await this.shareLinks.updateToken(link.id, generateShareToken());
     if (!rotated) {
-      throw new NotFoundException('Share link not found');
+      // Lost a race with a concurrent revoke; distinct message keeps logs unambiguous.
+      throw new NotFoundException('Share link was just removed');
     }
     return rotated;
   }
