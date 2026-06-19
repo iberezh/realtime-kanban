@@ -105,8 +105,16 @@ export const GUEST_FRAMES: Frame[] = [
   { doing: [], done: ['checkout', 'pricing'] },
 ];
 
-export const GUEST_CURSOR: CursorPos[] = [
-  { left: '30%', top: '40%' },
-  { left: '27%', top: '52%' },
-  { left: '73%', top: '56%' },
+/** Ivan, the teammate doing the work — his cursor trails the card. */
+export const GUEST_WORKER: CursorPos[] = [
+  { left: '27%', top: '42%' },
+  { left: '27%', top: '56%' },
+  { left: '72%', top: '56%' },
+];
+
+/** The guest, just watching — drifts only a little, never on a card. */
+export const GUEST_VIEWER: CursorPos[] = [
+  { left: '82%', top: '74%' },
+  { left: '77%', top: '70%' },
+  { left: '84%', top: '76%' },
 ];
