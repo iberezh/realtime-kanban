@@ -29,7 +29,7 @@ function expiryLabel(link: ShareLink): string {
   if (when.getTime() < Date.now()) {
     return 'Expired';
   }
-  return `Expires ${when.toLocaleDateString()}`;
+  return `Expires ${when.toLocaleDateString('en-US', { dateStyle: 'medium' })}`;
 }
 
 interface ShareDialogProps {

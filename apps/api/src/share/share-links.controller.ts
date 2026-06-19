@@ -54,7 +54,7 @@ export class ShareLinksController {
   }
 
   @Get('boards/:boardId/share-links')
-  @ApiOkResponse({ description: 'Active share links for the board.' })
+  @ApiOkResponse({ description: 'All share links for the board, including expired ones.' })
   list(
     @Param('boardId', ParseUUIDPipe) boardId: string,
     @CurrentUser() ctx: AuthContext,

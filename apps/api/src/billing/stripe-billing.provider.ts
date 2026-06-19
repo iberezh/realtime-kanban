@@ -89,7 +89,7 @@ export class StripeBillingProvider implements BillingProvider {
     if (session.status !== 'complete' || customerId !== account.stripeCustomerId) {
       return;
     }
-    if (!sub || typeof sub === 'string') {
+    if (!sub || typeof sub === 'string' || !ACTIVE_STATUSES.has(sub.status)) {
       return;
     }
     await this.accounts.setSubscription(account.id, {

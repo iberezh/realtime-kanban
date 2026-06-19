@@ -21,7 +21,7 @@ export function Brand({ size = 28, href = '/' }: BrandProps) {
           w={size}
           h={size}
           style={{
-            borderRadius: 9,
+            borderRadius: Math.round(size * 0.32),
             background: 'linear-gradient(135deg, #7c5cff, #ff6b9d)',
             display: 'grid',
             placeItems: 'center',
