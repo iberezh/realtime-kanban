@@ -22,7 +22,11 @@ import type { AuthContext } from '../auth/auth.types';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import type { ShareLink } from '../database/schema';
-import { CreateShareLinkCommand, RevokeShareLinkCommand } from './share.commands';
+import {
+  CreateShareLinkCommand,
+  RevokeShareLinkCommand,
+  RotateShareLinkCommand,
+} from './share.commands';
 import { CreateShareLinkDto } from './share.dto';
 import { ListBoardShareLinksQuery } from './share.queries';
 
@@ -67,5 +71,15 @@ export class ShareLinksController {
   @ApiNoContentResponse({ description: 'Share link revoked.' })
   revoke(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() ctx: AuthContext): Promise<void> {
     return this.commandBus.execute(new RevokeShareLinkCommand(id, ctx.accountId));
+  }
+
+  @Post('share-links/:id/rotate')
+  @HttpCode(HttpStatus.OK)
+  @ApiOkResponse({ description: 'Issues a fresh token; the previous URL stops working.' })
+  rotate(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() ctx: AuthContext,
+  ): Promise<ShareLink> {
+    return this.commandBus.execute(new RotateShareLinkCommand(id, ctx.accountId));
   }
 }

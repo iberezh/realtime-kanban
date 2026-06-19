@@ -13,6 +13,10 @@ export const createShareLink = (boardId: string, expiresAt: string | null): Prom
 export const revokeShareLink = (id: string): Promise<void> =>
   api(ENDPOINTS.shareLink(id), { method: 'DELETE' });
 
+/** Issues a fresh token for the link, invalidating the previous URL. */
+export const rotateShareLink = (id: string): Promise<ShareLink> =>
+  api(ENDPOINTS.shareLinkRotate(id), { method: 'POST' });
+
 /** Public — no session required; the token is the credential. */
 export const resolveShareLink = (token: string): Promise<SharedBoardView> =>
   api(ENDPOINTS.resolveShare(token));

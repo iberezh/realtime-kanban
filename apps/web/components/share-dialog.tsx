@@ -1,36 +1,13 @@
 'use client';
 
-import {
-  ActionIcon,
-  Alert,
-  Button,
-  CopyButton,
-  Group,
-  Modal,
-  Stack,
-  Text,
-  TextInput,
-} from '@mantine/core';
+import { Alert, Button, Group, Modal, Stack, Text } from '@mantine/core';
 import { DatePickerInput } from '@mantine/dates';
 import { useEffect, useState } from 'react';
-import { createShareLink, listShareLinks, revokeShareLink } from '@/lib/share-api';
+import { createShareLink, listShareLinks, revokeShareLink, rotateShareLink } from '@/lib/share-api';
 import type { ShareLink } from '@/lib/types';
-
-const shareUrl = (token: string): string =>
-  typeof window === 'undefined' ? '' : `${window.location.origin}/share/${token}`;
+import { ShareLinkRow } from './share-link-row';
 
 const today = (): string => new Date().toISOString().slice(0, 10);
-
-function expiryLabel(link: ShareLink): string {
-  if (!link.expiresAt) {
-    return 'Never expires';
-  }
-  const when = new Date(link.expiresAt);
-  if (when.getTime() < Date.now()) {
-    return 'Expired';
-  }
-  return `Expires ${when.toLocaleDateString('en-US', { dateStyle: 'medium' })}`;
-}
 
 interface ShareDialogProps {
   boardId: string;
@@ -80,6 +57,16 @@ export function ShareDialog({ boardId, opened, onClose }: ShareDialogProps) {
       setError('Could not revoke that link — it may still be active.');
     }
   };
+  // Swap in the rotated link (new token) once the server returns it.
+  const rotate = async (id: string): Promise<void> => {
+    setError(null);
+    try {
+      const rotated = await rotateShareLink(id);
+      setLinks((prev) => prev.map((link) => (link.id === id ? rotated : link)));
+    } catch {
+      setError('Could not rotate that link. Try again.');
+    }
+  };
 
   return (
     <Modal opened={opened} onClose={onClose} title="Share this board" centered>
@@ -114,34 +101,7 @@ export function ShareDialog({ boardId, opened, onClose }: ShareDialogProps) {
           </Text>
         ) : (
           links.map((link) => (
-            <Stack key={link.id} gap={2}>
-              <Group gap="xs" wrap="nowrap">
-                <TextInput flex={1} readOnly size="xs" value={shareUrl(link.token)} />
-                <CopyButton value={shareUrl(link.token)}>
-                  {({ copied, copy }) => (
-                    <Button
-                      size="xs"
-                      variant="light"
-                      color={copied ? 'teal' : 'violet'}
-                      onClick={copy}
-                    >
-                      {copied ? 'Copied' : 'Copy'}
-                    </Button>
-                  )}
-                </CopyButton>
-                <ActionIcon
-                  variant="subtle"
-                  color="red"
-                  aria-label="Revoke link"
-                  onClick={() => revoke(link.id)}
-                >
-                  ×
-                </ActionIcon>
-              </Group>
-              <Text size="xs" c="dimmed">
-                {expiryLabel(link)}
-              </Text>
-            </Stack>
+            <ShareLinkRow key={link.id} link={link} onRotate={rotate} onRevoke={revoke} />
           ))
         )}
       </Stack>
