@@ -68,7 +68,8 @@
   background: rgba(255, 255, 255, 0.5);
   border-radius: 13px;
   padding: 9px;
-  min-height: 210px;
+  /* Fixed so adding or removing a card never resizes the board; sized for two cards. */
+  height: 250px;
 }
 .col h4 {
   font-size: 11px;
@@ -127,7 +128,7 @@
   display: flex;
   align-items: flex-start;
   gap: 2px;
-  will-change: transform;
+  will-change: left, top;
 }
 .cursor svg {
   filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.2));
@@ -141,37 +142,6 @@
   border-radius: 6px;
   margin-top: 10px;
   white-space: nowrap;
-}
-.curMara {
-  animation: roamA 7s ease-in-out infinite;
-}
-.curAlex {
-  animation: roamB 9s ease-in-out infinite;
-}
-@keyframes roamA {
-  0% {
-    transform: translate(60%, 40%);
-  }
-  48% {
-    transform: translate(62%, 18%);
-  }
-  60% {
-    transform: translate(66%, 30%);
-  }
-  100% {
-    transform: translate(60%, 40%);
-  }
-}
-@keyframes roamB {
-  0% {
-    transform: translate(18%, 150%);
-  }
-  50% {
-    transform: translate(30%, 90%);
-  }
-  100% {
-    transform: translate(18%, 150%);
-  }
 }
 .ticker {
   margin-top: 12px;
@@ -200,8 +170,6 @@
   font-family: var(--mantine-font-family-monospace);
 }
 @media (prefers-reduced-motion: reduce) {
-  .curMara,
-  .curAlex,
   .liveDot {
     animation: none;
   }

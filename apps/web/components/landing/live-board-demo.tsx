@@ -1,31 +1,22 @@
 'use client';
 
-import { LayoutGroup, motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import demo from './demo.module.css';
-import { type CardData, DemoCard } from './demo-card';
-import { HERO_COLUMNS, HERO_MOVER, HERO_STATIC, HERO_TICKER } from './demo-data';
+import { DemoBoard } from './demo-board';
+import { DemoCursor } from './demo-cursor';
+import { HERO_CARDS, HERO_COLUMNS, HERO_CURSORS, HERO_FRAMES, HERO_TICKER } from './demo-data';
 import { useBoardLoop } from './use-board-loop';
 
-const Cursor = ({ cls, color, name }: { cls: string | undefined; color: string; name: string }) => (
-  <div className={`${demo.cursor} ${cls}`}>
-    <svg width="18" height="18" viewBox="0 0 24 24" fill={color} aria-hidden="true">
-      <path d="M5 3l15 9-7 1.5L9 21z" />
-    </svg>
-    <span className={demo.tag} style={{ background: color }}>
-      {name}
-    </span>
-  </div>
-);
+const IDLE = { who: 'M', color: '#36c5a8', msg: 'Realtime, always in sync' };
+const PARK = { left: '50%', top: '40%' };
 
-/** Self-playing board: a card physically glides from Doing to Done while cursors roam. */
+/** Self-playing board: a task is created in Todo and worked through to Done while cursors trail it. */
 export function LiveBoardDemo() {
-  const step = useBoardLoop(2, 2800);
-  const moverColumn = step === 1 ? 'done' : 'doing';
-  const cardsFor = (columnId: string): CardData[] => {
-    const base = HERO_STATIC[columnId] ?? [];
-    return moverColumn === columnId ? [HERO_MOVER, ...base] : base;
-  };
-  const line = step === 1 ? HERO_TICKER[1] : HERO_TICKER[0];
+  const step = useBoardLoop(HERO_FRAMES.length, 2400);
+  const line = HERO_TICKER[step] ?? IDLE;
+  const ivan = HERO_CURSORS.ivan?.[step] ?? PARK;
+  const mara = HERO_CURSORS.mara?.[step] ?? PARK;
+  const alex = HERO_CURSORS.alex?.[step] ?? PARK;
 
   return (
     <div className={demo.demo} aria-hidden="true">
@@ -40,23 +31,7 @@ export function LiveBoardDemo() {
           <span className={demo.liveDot} />3 online
         </span>
       </div>
-      <LayoutGroup>
-        <div className={demo.cols}>
-          {HERO_COLUMNS.map((column) => {
-            const cards = cardsFor(column.id);
-            return (
-              <div key={column.id} className={demo.col}>
-                <h4>
-                  {column.title} <span>{cards.length}</span>
-                </h4>
-                {cards.map((card) => (
-                  <DemoCard key={card.id} card={card} />
-                ))}
-              </div>
-            );
-          })}
-        </div>
-      </LayoutGroup>
+      <DemoBoard columns={HERO_COLUMNS} cards={HERO_CARDS} frames={HERO_FRAMES} step={step} />
       <div className={demo.ticker}>
         <span className={demo.who} style={{ background: line.color }}>
           {line.who}
@@ -71,8 +46,9 @@ export function LiveBoardDemo() {
           {line.msg}
         </motion.span>
       </div>
-      <Cursor cls={demo.curMara} color="#36c5a8" name="Mara" />
-      <Cursor cls={demo.curAlex} color="#ff6b9d" name="Alex" />
+      <DemoCursor color="#7c5cff" name="Ivan" pos={ivan} />
+      <DemoCursor color="#36c5a8" name="Mara" pos={mara} />
+      <DemoCursor color="#ff6b9d" name="Alex" pos={alex} />
     </div>
   );
 }

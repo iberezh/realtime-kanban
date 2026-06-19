@@ -1,9 +1,6 @@
+import type { BoardColumn, Frame } from './demo-board';
 import type { CardData } from './demo-card';
-
-export interface DemoColumn {
-  id: string;
-  title: string;
-}
+import type { CursorPos } from './demo-cursor';
 
 export interface TickerLine {
   who: string;
@@ -11,75 +8,121 @@ export interface TickerLine {
   msg: string;
 }
 
-/** Hero board: "Presence avatars" travels between Doing and Done as the loop ticks. */
-export const HERO_COLUMNS: DemoColumn[] = [
+/**
+ * Hero board: "Auth guard" is created in Todo, then worked across Doing into Done while the
+ * other cards stay put — a calm, legible workflow rather than a busy shuffle.
+ */
+export const HERO_COLUMNS: BoardColumn[] = [
   { id: 'todo', title: 'Todo' },
   { id: 'doing', title: 'Doing' },
   { id: 'done', title: 'Done' },
 ];
 
-export const HERO_STATIC: Record<string, CardData[]> = {
-  todo: [
-    {
-      id: 'h-onboarding',
-      chip: { label: 'Design', bg: '#fff0e6', color: '#e0632a' },
-      title: 'Onboarding flow',
-      avatar: { initial: 'I', color: '#7c5cff' },
-      code: 'LNE-12',
-    },
-    {
-      id: 'h-empty',
-      title: 'Empty states',
-      avatar: { initial: 'A', color: '#ff6b9d' },
-      code: 'LNE-19',
-    },
-  ],
-  doing: [],
-  done: [
-    {
-      id: 'h-sync',
-      title: 'Realtime sync',
-      avatar: { initial: 'I', color: '#7c5cff' },
-      code: 'LNE-03',
-    },
-  ],
+export const HERO_CARDS: Record<string, CardData> = {
+  onboard: {
+    id: 'onboard',
+    chip: { label: 'Design', bg: '#fff0e6', color: '#e0632a' },
+    title: 'Onboarding flow',
+    avatar: { initial: 'A', color: '#ff6b9d' },
+    code: 'LNE-12',
+  },
+  presence: {
+    id: 'presence',
+    chip: { label: 'Live', bg: '#e4fbf3', color: '#1f9e85' },
+    title: 'Presence avatars',
+    avatar: { initial: 'M', color: '#36c5a8' },
+    code: 'LNE-08',
+  },
+  sync: {
+    id: 'sync',
+    title: 'Realtime sync',
+    avatar: { initial: 'I', color: '#7c5cff' },
+    code: 'LNE-03',
+  },
+  auth: {
+    id: 'auth',
+    chip: { label: 'Build', bg: '#efeaff', color: '#7c5cff' },
+    title: 'Auth guard',
+    avatar: { initial: 'M', color: '#36c5a8' },
+    code: 'LNE-21',
+  },
 };
 
-export const HERO_MOVER: CardData = {
-  id: 'h-presence',
-  chip: { label: 'Live', bg: '#e4fbf3', color: '#1f9e85' },
-  title: 'Presence avatars',
-  avatar: { initial: 'M', color: '#36c5a8' },
-  code: 'LNE-08',
-};
-
-export const HERO_TICKER: [TickerLine, TickerLine] = [
-  { who: 'I', color: '#7c5cff', msg: 'Ivan picked up “Presence avatars”' },
-  { who: 'M', color: '#36c5a8', msg: 'Mara moved “Presence avatars” to Done ✓' },
+export const HERO_FRAMES: Frame[] = [
+  { todo: ['onboard'], doing: ['presence'], done: ['sync'] },
+  { todo: ['onboard', 'auth'], doing: ['presence'], done: ['sync'] },
+  { todo: ['onboard'], doing: ['presence', 'auth'], done: ['sync'] },
+  { todo: ['onboard'], doing: ['presence'], done: ['sync', 'auth'] },
 ];
 
-/** Guest board: a read-only client view where "Checkout v2" ships to Done. */
-export const GUEST_COLUMNS: DemoColumn[] = [
+export const HERO_TICKER: TickerLine[] = [
+  { who: 'M', color: '#36c5a8', msg: 'Realtime, always in sync' },
+  { who: 'I', color: '#7c5cff', msg: 'Ivan created “Auth guard”, assigned Mara' },
+  { who: 'M', color: '#36c5a8', msg: 'Mara moved “Auth guard” to Doing' },
+  { who: 'M', color: '#36c5a8', msg: 'Mara shipped “Auth guard” to Done ✓' },
+];
+
+export const HERO_CURSORS: Record<string, CursorPos[]> = {
+  // Ivan opens the board, then creates and assigns "Auth guard" in Todo before drifting off.
+  ivan: [
+    { left: '64%', top: '30%' },
+    { left: '18%', top: '52%' },
+    { left: '40%', top: '34%' },
+    { left: '30%', top: '28%' },
+  ],
+  // Mara waits, then carries her assigned card through Doing into Done.
+  mara: [
+    { left: '52%', top: '32%' },
+    { left: '44%', top: '40%' },
+    { left: '49%', top: '56%' },
+    { left: '78%', top: '56%' },
+  ],
+  alex: [
+    { left: '72%', top: '60%' },
+    { left: '60%', top: '66%' },
+    { left: '66%', top: '50%' },
+    { left: '74%', top: '62%' },
+  ],
+};
+
+/** Guest board: a client watches "Checkout v2" appear and ship — a shorter, distinct rhythm. */
+export const GUEST_COLUMNS: BoardColumn[] = [
   { id: 'doing', title: 'Doing' },
   { id: 'done', title: 'Done' },
 ];
 
-export const GUEST_STATIC: Record<string, CardData[]> = {
-  doing: [],
-  done: [
-    {
-      id: 'g-pricing',
-      title: 'Pricing page',
-      avatar: { initial: 'M', color: '#36c5a8' },
-      code: 'LNE-15',
-    },
-  ],
+export const GUEST_CARDS: Record<string, CardData> = {
+  pricing: {
+    id: 'pricing',
+    title: 'Pricing page',
+    avatar: { initial: 'M', color: '#36c5a8' },
+    code: 'LNE-15',
+  },
+  checkout: {
+    id: 'checkout',
+    chip: { label: 'Build', bg: '#fff6e0', color: '#b07d1a' },
+    title: 'Checkout v2',
+    avatar: { initial: 'I', color: '#7c5cff' },
+    code: 'LNE-22',
+  },
 };
 
-export const GUEST_MOVER: CardData = {
-  id: 'g-checkout',
-  chip: { label: 'Build', bg: '#fff6e0', color: '#b07d1a' },
-  title: 'Checkout v2',
-  avatar: { initial: 'I', color: '#7c5cff' },
-  code: 'LNE-22',
-};
+export const GUEST_FRAMES: Frame[] = [
+  { doing: [], done: ['pricing'] },
+  { doing: ['checkout'], done: ['pricing'] },
+  { doing: [], done: ['checkout', 'pricing'] },
+];
+
+/** Ivan, the teammate doing the work — his cursor trails the card. */
+export const GUEST_WORKER: CursorPos[] = [
+  { left: '27%', top: '42%' },
+  { left: '27%', top: '56%' },
+  { left: '72%', top: '56%' },
+];
+
+/** The guest, just watching — drifts only a little, never on a card. */
+export const GUEST_VIEWER: CursorPos[] = [
+  { left: '82%', top: '74%' },
+  { left: '77%', top: '70%' },
+  { left: '84%', top: '76%' },
+];
