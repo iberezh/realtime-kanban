@@ -120,45 +120,6 @@
   font-size: 9px;
   font-weight: 700;
 }
-.travelDoing {
-  animation: liftout 7s ease-in-out infinite;
-}
-.travelDone {
-  animation: dropin 7s ease-in-out infinite;
-}
-@keyframes liftout {
-  0%,
-  38% {
-    opacity: 1;
-    transform: none;
-  }
-  48% {
-    opacity: 1;
-    transform: translateY(-6px) rotate(-2deg) scale(1.03);
-    box-shadow: 0 16px 30px -10px rgba(124, 92, 255, 0.5);
-  }
-  58%,
-  100% {
-    opacity: 0;
-    transform: translateY(-2px) scale(0.96);
-  }
-}
-@keyframes dropin {
-  0%,
-  58% {
-    opacity: 0;
-    transform: translateY(-8px) scale(0.96);
-  }
-  70% {
-    opacity: 1;
-    transform: translateY(0) scale(1.04);
-  }
-  80%,
-  100% {
-    opacity: 1;
-    transform: none;
-  }
-}
 .cursor {
   position: absolute;
   z-index: 6;
@@ -237,33 +198,11 @@
 }
 .msg {
   font-family: var(--mantine-font-family-monospace);
-  animation: tick 7s ease-in-out infinite;
-}
-@keyframes tick {
-  0%,
-  15% {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  25%,
-  92% {
-    opacity: 1;
-    transform: none;
-  }
-  100% {
-    opacity: 0;
-  }
 }
 @media (prefers-reduced-motion: reduce) {
-  .travelDoing,
-  .travelDone,
   .curMara,
   .curAlex,
-  .msg,
   .liveDot {
     animation: none;
-  }
-  .travelDone {
-    opacity: 0;
   }
 }
