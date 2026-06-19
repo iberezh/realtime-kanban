@@ -24,6 +24,11 @@ export class EnvironmentVariables {
   @IsOptional()
   APP_URL?: string;
 
+  /** Optional. When set, the Socket.IO Redis adapter fans out across instances. */
+  @IsString()
+  @IsOptional()
+  REDIS_URL?: string;
+
   /** Stripe billing — all optional; when STRIPE_SECRET_KEY is absent the mock provider runs. */
   @IsString()
   @IsOptional()

@@ -15,7 +15,8 @@ async function bootstrap(): Promise<void> {
   app.setGlobalPrefix('api/v1');
   app.enableCors({ origin: corsOrigin, credentials: true });
   app.use(cookieParser());
-  app.useWebSocketAdapter(new ConfiguredSocketIoAdapter(app, corsOrigin));
+  const redisUrl = config.get<string>('REDIS_URL');
+  app.useWebSocketAdapter(new ConfiguredSocketIoAdapter(app, corsOrigin, redisUrl));
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   app.enableShutdownHooks();
 

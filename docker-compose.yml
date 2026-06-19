@@ -18,6 +18,14 @@ services:
       timeout: 5s
       retries: 10
 
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   api:
     build:
       context: .
@@ -27,6 +35,8 @@ services:
       CORS_ORIGIN: http://localhost:3002
       APP_URL: http://localhost:3002
       DATABASE_URL: postgresql://kanban:kanban@postgres:5432/kanban
+      # Enables the Socket.IO Redis adapter so the gateway scales across instances.
+      REDIS_URL: redis://redis:6379
       # Dev-only default so `docker compose up` just works; set JWT_SECRET in your
       # shell or an .env file for anything real.
       JWT_SECRET: ${JWT_SECRET:-dev-only-insecure-secret-change-me}
@@ -39,6 +49,8 @@ services:
       - '4000:4000'
     depends_on:
       postgres:
+        condition: service_healthy
+      redis:
         condition: service_healthy
 
   web:

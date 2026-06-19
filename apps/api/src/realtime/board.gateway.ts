@@ -12,7 +12,7 @@ import {
 import { Server, Socket } from 'socket.io';
 import { BoardIdForShareTokenQuery } from '../share/share.queries';
 import { GuestJoinDto, JoinBoardDto, LeaveBoardDto } from './join-board.dto';
-import { type Member, PresenceService } from './presence.service';
+import type { Member, SocketState } from './presence.types';
 import { roomOf, type WireEvent } from './wire';
 
 const wsValidation = new ValidationPipe({
@@ -30,23 +30,16 @@ export class BoardGateway implements OnGatewayDisconnect {
   @WebSocketServer()
   server!: Server;
 
-  constructor(
-    private readonly presence: PresenceService,
-    private readonly queryBus: QueryBus,
-  ) {}
+  constructor(private readonly queryBus: QueryBus) {}
 
   // Members hold the boardId legitimately (it only reaches them through authed APIs).
   @SubscribeMessage('board:join')
   @UsePipes(wsValidation)
-  join(@ConnectedSocket() client: Socket, @MessageBody() dto: JoinBoardDto): { members: Member[] } {
-    client.join(roomOf(dto.boardId));
-    const members = this.presence.join(dto.boardId, {
-      socketId: client.id,
-      name: dto.name,
-      color: dto.color,
-    });
-    this.broadcastPresence(dto.boardId, members);
-    return { members };
+  async join(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() dto: JoinBoardDto,
+  ): Promise<{ members: Member[] }> {
+    return { members: await this.enter(client, dto.boardId, { name: dto.name, color: dto.color }) };
   }
 
   // Guests never send a boardId: the share token is validated server-side first.
@@ -62,25 +55,22 @@ export class BoardGateway implements OnGatewayDisconnect {
     if (!boardId) {
       throw new WsException('This share link is no longer active');
     }
-    client.join(roomOf(boardId));
-    const members = this.presence.join(boardId, { socketId: client.id, ...GUEST });
-    this.broadcastPresence(boardId, members);
-    return { boardId, members };
+    return { boardId, members: await this.enter(client, boardId, GUEST) };
   }
 
   @SubscribeMessage('board:leave')
   @UsePipes(wsValidation)
-  leave(@ConnectedSocket() client: Socket, @MessageBody() dto: LeaveBoardDto): void {
-    client.leave(roomOf(dto.boardId));
-    const members = this.presence.leave(dto.boardId, client.id);
-    if (members) {
-      this.broadcastPresence(dto.boardId, members);
-    }
+  async leave(@ConnectedSocket() client: Socket, @MessageBody() dto: LeaveBoardDto): Promise<void> {
+    await client.leave(roomOf(dto.boardId));
+    const state = client.data as SocketState;
+    state.boards = (state.boards ?? []).filter((id) => id !== dto.boardId);
+    await this.broadcastPresence(dto.boardId);
   }
 
-  handleDisconnect(client: Socket): void {
-    for (const { boardId, members } of this.presence.leaveAll(client.id)) {
-      this.broadcastPresence(boardId, members);
+  async handleDisconnect(client: Socket): Promise<void> {
+    // The socket has already left its rooms, so fetchSockets reports the survivors.
+    for (const boardId of (client.data as SocketState).boards ?? []) {
+      await this.broadcastPresence(boardId, client.id);
     }
   }
 
@@ -89,7 +79,26 @@ export class BoardGateway implements OnGatewayDisconnect {
     this.server.to(roomOf(event.boardId)).emit('board:event', event);
   }
 
-  private broadcastPresence(boardId: string, members: Member[]): void {
+  private async enter(
+    client: Socket,
+    boardId: string,
+    identity: { name: string; color: string },
+  ): Promise<Member[]> {
+    const state = client.data as SocketState;
+    state.member = { socketId: client.id, ...identity };
+    state.boards = [...new Set([...(state.boards ?? []), boardId])];
+    await client.join(roomOf(boardId));
+    return this.broadcastPresence(boardId);
+  }
+
+  // Presence is derived from the room's sockets — across instances when the Redis adapter is on.
+  private async broadcastPresence(boardId: string, excludeId?: string): Promise<Member[]> {
+    const sockets = await this.server.in(roomOf(boardId)).fetchSockets();
+    const members = sockets
+      .filter((socket) => socket.id !== excludeId)
+      .map((socket) => (socket.data as SocketState).member)
+      .filter((member): member is Member => member !== undefined);
     this.server.to(roomOf(boardId)).emit('presence:state', { boardId, members });
+    return members;
   }
 }
