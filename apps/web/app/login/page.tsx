@@ -1,21 +1,10 @@
 'use client';
 
-import {
-  Anchor,
-  Button,
-  Center,
-  Container,
-  Paper,
-  PasswordInput,
-  Stack,
-  Text,
-  TextInput,
-  Title,
-} from '@mantine/core';
+import { Anchor, Button, Paper, PasswordInput, Stack, Text, TextInput, Title } from '@mantine/core';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
-import { Brand } from '@/components/brand';
+import { AuthShell } from '@/components/auth-shell';
 import { login } from '@/lib/api';
 import { useSessionStore } from '@/stores/session-store';
 
@@ -47,12 +36,9 @@ export default function LoginPage() {
   };
 
   return (
-    <Container size={420} py={80}>
-      <Center mb="lg">
-        <Brand size={32} />
-      </Center>
+    <AuthShell>
       <Title order={2} mb={4} ta="center">
-        Sign in to Lane
+        Welcome back
       </Title>
       <Text c="dimmed" size="sm" ta="center" mb="lg">
         Don't have an account?{' '}
@@ -87,6 +73,6 @@ export default function LoginPage() {
           </Stack>
         </form>
       </Paper>
-    </Container>
+    </AuthShell>
   );
 }

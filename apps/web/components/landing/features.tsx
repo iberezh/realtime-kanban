@@ -13,7 +13,7 @@ const FEATURES = [
     body: 'Every move broadcasts in milliseconds over WebSockets. Drag here, it lands there — live.',
   },
   {
-    icon: 'solar:eye-bold-duotone',
+    icon: 'solar:eye-linear',
     bg: '#e4fbf3',
     color: '#1f9e85',
     title: 'Live presence',
@@ -27,7 +27,7 @@ const FEATURES = [
     body: 'Share a read-only link. Clients and stakeholders watch progress live — no login.',
   },
   {
-    icon: 'solar:shield-check-bold-duotone',
+    icon: 'solar:shield-check-linear',
     bg: '#fff6e0',
     color: '#b07d1a',
     title: 'Conflict-safe',

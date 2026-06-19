@@ -1,3 +1,6 @@
+'use client';
+
+import { Icon } from '@iconify/react';
 import demo from './demo.module.css';
 import styles from './landing.module.css';
 import { Reveal } from './reveal';
@@ -15,7 +18,10 @@ export function GuestBand() {
               account, nothing to install.
             </p>
             <div className={styles.shareRow}>
-              <div className={styles.shareInput}>🔗 lane.app/share/q3-launch-7Fg2…</div>
+              <div className={styles.shareInput}>
+                <Icon icon="solar:link-round-linear" width={15} height={15} />
+                lane.app/share/q3-launch-7Fg2…
+              </div>
               <button type="button" className={`${styles.btn} ${styles.btnPrimary}`}>
                 Copy
               </button>
