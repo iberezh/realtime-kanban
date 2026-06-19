@@ -8,3 +8,6 @@ export const startCheckout = (plan: 'pro' | 'business'): Promise<{ url: string }
 
 export const openPortal = (): Promise<{ url: string }> =>
   api(ENDPOINTS.billingPortal, { method: 'POST' });
+
+export const confirmCheckout = (sessionId: string): Promise<BillingStatus> =>
+  api(ENDPOINTS.billingConfirm, { method: 'POST', body: JSON.stringify({ sessionId }) });

@@ -4,8 +4,11 @@ import type { SharedBoardView, ShareLink } from './types';
 export const listShareLinks = (boardId: string): Promise<ShareLink[]> =>
   api(ENDPOINTS.boardShareLinks(boardId));
 
-export const createShareLink = (boardId: string): Promise<ShareLink> =>
-  api(ENDPOINTS.boardShareLinks(boardId), { method: 'POST' });
+export const createShareLink = (boardId: string, expiresAt: string | null): Promise<ShareLink> =>
+  api(ENDPOINTS.boardShareLinks(boardId), {
+    method: 'POST',
+    body: JSON.stringify(expiresAt ? { expiresAt } : {}),
+  });
 
 export const revokeShareLink = (id: string): Promise<void> =>
   api(ENDPOINTS.shareLink(id), { method: 'DELETE' });

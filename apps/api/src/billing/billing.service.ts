@@ -39,6 +39,11 @@ export class BillingService {
     return this.provider.portal(await this.require(accountId));
   }
 
+  async confirm(accountId: string, sessionId: string): Promise<BillingStatus> {
+    await this.provider.confirm(await this.require(accountId), sessionId);
+    return this.status(accountId);
+  }
+
   handleWebhook(rawBody: Buffer, signature: string | undefined): Promise<void> {
     return this.provider.handleWebhook(rawBody, signature);
   }

@@ -32,6 +32,7 @@ export class CreateShareLinkHandler implements ICommandHandler<CreateShareLinkCo
       boardId: board.id,
       token: generateShareToken(),
       createdBy: command.userId,
+      expiresAt: command.expiresAt,
     });
   }
 }

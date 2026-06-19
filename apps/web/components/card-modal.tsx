@@ -11,8 +11,9 @@ import {
   Textarea,
   TextInput,
 } from '@mantine/core';
+import { DatePickerInput } from '@mantine/dates';
 import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { deleteCard, updateCard } from '@/lib/api';
 import { dateInputValue } from '@/lib/format';
 import { useBoardStore } from '@/stores/board-store';
@@ -47,6 +48,7 @@ export function CardModal({ cardId, onClose }: CardModalProps) {
   const [actionError, setActionError] = useState<string | null>(null);
   const {
     register,
+    control,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<CardFormValues>({
@@ -103,7 +105,20 @@ export function CardModal({ cardId, onClose }: CardModalProps) {
               maxLength: { value: 5000, message: 'Keep it under 5000 characters' },
             })}
           />
-          <TextInput type="date" label="Due date" {...register('dueAt')} />
+          <Controller
+            control={control}
+            name="dueAt"
+            render={({ field }) => (
+              <DatePickerInput
+                label="Due date"
+                placeholder="Pick a date"
+                clearable
+                valueFormat="MMM D, YYYY"
+                value={field.value || null}
+                onChange={(value) => field.onChange(value ?? '')}
+              />
+            )}
+          />
           <Divider />
           <div>
             <Text size="sm" fw={500} mb={6}>

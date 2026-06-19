@@ -22,6 +22,7 @@ const link = (): ShareLink => ({
   boardId: BOARD_ID,
   token: 'tok',
   createdBy: USER,
+  expiresAt: null,
   createdAt: new Date(),
 });
 
@@ -43,7 +44,7 @@ function makeRepos(overrides: { board?: Board | null; link?: ShareLink | null; p
 }
 
 describe('CreateShareLinkHandler', () => {
-  const cmd = new CreateShareLinkCommand(BOARD_ID, ACCOUNT, USER);
+  const cmd = new CreateShareLinkCommand(BOARD_ID, ACCOUNT, USER, null);
 
   it('throws NotFound when the board is missing', async () => {
     const r = makeRepos({ board: null });

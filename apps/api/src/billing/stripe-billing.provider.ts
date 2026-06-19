@@ -62,7 +62,7 @@ export class StripeBillingProvider implements BillingProvider {
       line_items: [{ price: this.priceId(plan), quantity: 1 }],
       client_reference_id: account.id,
       metadata: { accountId: account.id, plan },
-      success_url: `${this.appUrl()}/app?billing=success`,
+      success_url: `${this.appUrl()}/app?billing=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${this.appUrl()}/app?billing=cancelled`,
     });
     if (!session.url) throw new Error('Stripe returned no checkout URL');
@@ -75,6 +75,27 @@ export class StripeBillingProvider implements BillingProvider {
       return_url: `${this.appUrl()}/app`,
     });
     return { url: session.url };
+  }
+
+  // Reconcile the plan the instant the user returns from Checkout, without waiting for the webhook.
+  async confirm(account: Account, sessionId: string): Promise<void> {
+    const session = await this.stripe.checkout.sessions.retrieve(sessionId, {
+      expand: ['subscription'],
+    });
+    const customerId =
+      typeof session.customer === 'string' ? session.customer : session.customer?.id;
+    const sub = session.subscription;
+    // Only sync onto the account that owns this Stripe customer.
+    if (session.status !== 'complete' || customerId !== account.stripeCustomerId) {
+      return;
+    }
+    if (!sub || typeof sub === 'string') {
+      return;
+    }
+    await this.accounts.setSubscription(account.id, {
+      plan: this.planForPrice(sub.items.data[0]?.price.id),
+      subscriptionId: sub.id,
+    });
   }
 
   async handleWebhook(rawBody: Buffer, signature: string | undefined): Promise<void> {

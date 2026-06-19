@@ -27,6 +27,10 @@ export class MockBillingProvider implements BillingProvider {
     return { url: `${this.appUrl()}/app` };
   }
 
+  async confirm(): Promise<void> {
+    // Mock checkout already applied the plan; nothing to reconcile on return.
+  }
+
   async handleWebhook(): Promise<void> {
     // No webhooks in mock mode — checkout applies the plan synchronously.
   }

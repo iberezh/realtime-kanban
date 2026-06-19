@@ -2,7 +2,7 @@
 
 import { Badge, Button, Group } from '@mantine/core';
 import { useEffect, useState } from 'react';
-import { getBillingStatus } from '@/lib/billing-api';
+import { confirmCheckout, getBillingStatus } from '@/lib/billing-api';
 import type { BillingStatus } from '@/lib/types';
 import { BillingDialog } from './billing-dialog';
 
@@ -15,7 +15,14 @@ export function BillingButton() {
 
   useEffect(() => {
     let active = true;
-    getBillingStatus().then(
+    // On return from Stripe Checkout, sync the plan from the session before the webhook lands.
+    const params = new URLSearchParams(window.location.search);
+    const sessionId = params.get('session_id');
+    if (params.has('billing')) {
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+    const load = sessionId ? confirmCheckout(sessionId) : getBillingStatus();
+    load.then(
       (next) => active && setStatus(next),
       () => undefined,
     );

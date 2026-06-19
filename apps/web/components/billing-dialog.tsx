@@ -21,6 +21,7 @@ const TIERS: { plan: Plan; name: string; price: string; features: string[] }[] =
   },
 ];
 const RANK: Record<Plan, number> = { free: 0, pro: 1, business: 2 };
+const LABEL: Record<Plan, string> = { free: 'Free', pro: 'Pro', business: 'Business' };
 
 interface BillingDialogProps {
   status: BillingStatus | null;
@@ -57,6 +58,8 @@ export function BillingDialog({ status, opened, onClose }: BillingDialogProps) {
     }
   };
 
+  const upgrades = TIERS.filter((tier) => RANK[tier.plan] > RANK[current]);
+
   return (
     <Modal opened={opened} onClose={onClose} title="Plans & billing" size="lg" centered>
       <Group align="stretch" grow gap="sm">
@@ -80,45 +83,57 @@ export function BillingDialog({ status, opened, onClose }: BillingDialogProps) {
                 /mo
               </Text>
             </Text>
-            <Stack gap={2} mt="sm" mb="md">
+            <Stack gap={2} mt="sm">
               {tier.features.map((feature) => (
                 <Text key={feature} size="xs" c="dimmed">
                   {feature}
                 </Text>
               ))}
             </Stack>
-            {RANK[tier.plan] > RANK[current] ? (
-              <Button
-                fullWidth
-                size="xs"
-                loading={busy === tier.plan}
-                onClick={() => upgrade(tier.plan as 'pro' | 'business')}
-              >
-                Upgrade
-              </Button>
-            ) : (
-              <Button fullWidth size="xs" variant="default" disabled>
-                {tier.plan === current ? 'Current plan' : 'Included'}
-              </Button>
-            )}
           </Card>
         ))}
       </Group>
+
       {error && (
         <Alert color="red" variant="light" mt="md">
           {error}
         </Alert>
       )}
-      {status?.mode === 'stripe' && current !== 'free' && (
-        <Button variant="subtle" size="xs" mt="md" loading={portalBusy} onClick={manage}>
-          Manage billing
-        </Button>
-      )}
-      {status?.mode === 'mock' && (
-        <Text size="xs" c="dimmed" mt="md">
-          Demo mode — upgrades apply instantly, no payment needed.
-        </Text>
-      )}
+
+      <Group justify="space-between" align="center" mt="lg" wrap="nowrap">
+        <Stack gap={0}>
+          <Text size="sm">
+            Current plan: <b>{LABEL[current]}</b>
+          </Text>
+          {status?.mode === 'mock' && (
+            <Text size="xs" c="dimmed">
+              Demo mode — upgrades apply instantly.
+            </Text>
+          )}
+        </Stack>
+        <Group gap="xs" wrap="nowrap">
+          {status?.mode === 'stripe' && current !== 'free' && (
+            <Button variant="subtle" size="xs" loading={portalBusy} onClick={manage}>
+              Manage billing
+            </Button>
+          )}
+          {upgrades.map((tier) => (
+            <Button
+              key={tier.plan}
+              size="xs"
+              loading={busy === tier.plan}
+              onClick={() => upgrade(tier.plan as 'pro' | 'business')}
+            >
+              Upgrade to {tier.name}
+            </Button>
+          ))}
+          {upgrades.length === 0 && status?.mode !== 'stripe' && (
+            <Text size="xs" c="dimmed">
+              You're on the top plan.
+            </Text>
+          )}
+        </Group>
+      </Group>
     </Modal>
   );
 }

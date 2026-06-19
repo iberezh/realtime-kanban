@@ -42,6 +42,7 @@ export const ENDPOINTS = {
   billingStatus: '/billing/status',
   billingCheckout: '/billing/checkout',
   billingPortal: '/billing/portal',
+  billingConfirm: '/billing/confirm',
 } as const;
 
 export async function api<T>(path: string, init?: RequestInit): Promise<T> {

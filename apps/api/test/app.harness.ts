@@ -1,12 +1,24 @@
 import { type INestApplication, ValidationPipe } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Test } from '@nestjs/testing';
 import cookieParser from 'cookie-parser';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
+import { AccountsRepository } from '../src/billing/accounts.repository';
+import { BILLING_PROVIDER } from '../src/billing/billing.types';
+import { MockBillingProvider } from '../src/billing/mock-billing.provider';
 
 /** Boots the app exactly like main.ts (prefix, cookie parsing, validation) for e2e tests. */
 export async function createTestApp(): Promise<INestApplication> {
-  const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
+  // E2E always runs the keyless mock provider, regardless of any real Stripe key in .env.
+  const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
+    .overrideProvider(BILLING_PROVIDER)
+    .useFactory({
+      inject: [AccountsRepository, ConfigService],
+      factory: (accounts: AccountsRepository, config: ConfigService) =>
+        new MockBillingProvider(accounts, config),
+    })
+    .compile();
   const app = moduleRef.createNestApplication({ rawBody: true });
   app.setGlobalPrefix('api/v1');
   app.use(cookieParser());
