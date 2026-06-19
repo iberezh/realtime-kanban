@@ -13,7 +13,7 @@ import {
 } from '@mantine/core';
 import { DatePickerInput } from '@mantine/dates';
 import { useEffect, useState } from 'react';
-import { createShareLink, listShareLinks, revokeShareLink } from '@/lib/share-api';
+import { createShareLink, listShareLinks, revokeShareLink, rotateShareLink } from '@/lib/share-api';
 import type { ShareLink } from '@/lib/types';
 
 const shareUrl = (token: string): string =>
@@ -80,6 +80,16 @@ export function ShareDialog({ boardId, opened, onClose }: ShareDialogProps) {
       setError('Could not revoke that link — it may still be active.');
     }
   };
+  // Swap in the rotated link (new token) once the server returns it.
+  const rotate = async (id: string): Promise<void> => {
+    setError(null);
+    try {
+      const rotated = await rotateShareLink(id);
+      setLinks((prev) => prev.map((link) => (link.id === id ? rotated : link)));
+    } catch {
+      setError('Could not rotate that link. Try again.');
+    }
+  };
 
   return (
     <Modal opened={opened} onClose={onClose} title="Share this board" centered>
@@ -129,6 +139,15 @@ export function ShareDialog({ boardId, opened, onClose }: ShareDialogProps) {
                     </Button>
                   )}
                 </CopyButton>
+                <ActionIcon
+                  variant="subtle"
+                  color="violet"
+                  aria-label="Rotate link"
+                  title="Issue a new link and disable this one"
+                  onClick={() => rotate(link.id)}
+                >
+                  ↻
+                </ActionIcon>
                 <ActionIcon
                   variant="subtle"
                   color="red"

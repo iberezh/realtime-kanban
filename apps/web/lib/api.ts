@@ -37,6 +37,7 @@ export const ENDPOINTS = {
   // Share links
   boardShareLinks: (boardId: string) => `/boards/${boardId}/share-links`,
   shareLink: (id: string) => `/share-links/${id}`,
+  shareLinkRotate: (id: string) => `/share-links/${id}/rotate`,
   resolveShare: (token: string) => `/share/${token}`,
   // Billing
   billingStatus: '/billing/status',

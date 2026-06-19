@@ -51,4 +51,14 @@ export class ShareLinkRepository {
       .returning({ id: shareLinks.id });
     return deleted.length > 0;
   }
+
+  /** Swaps in a fresh token, invalidating the previous URL. Returns the updated row. */
+  async updateToken(id: string, token: string): Promise<ShareLink | null> {
+    const [row] = await this.db
+      .update(shareLinks)
+      .set({ token })
+      .where(eq(shareLinks.id, id))
+      .returning();
+    return row ?? null;
+  }
 }

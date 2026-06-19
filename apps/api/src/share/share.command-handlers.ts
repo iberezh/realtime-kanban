@@ -4,7 +4,11 @@ import { AccountsRepository } from '../billing/accounts.repository';
 import { PLAN_LIMITS, planOf } from '../billing/plan.limits';
 import type { ShareLink } from '../database/schema';
 import { BoardsRepository } from '../kanban/repositories/boards.repository';
-import { CreateShareLinkCommand, RevokeShareLinkCommand } from './share.commands';
+import {
+  CreateShareLinkCommand,
+  RevokeShareLinkCommand,
+  RotateShareLinkCommand,
+} from './share.commands';
 import { generateShareToken } from './share.token';
 import { ShareLinkRepository } from './share-link.repository';
 
@@ -55,5 +59,29 @@ export class RevokeShareLinkHandler implements ICommandHandler<RevokeShareLinkCo
       throw new ForbiddenException();
     }
     await this.shareLinks.delete(link.id);
+  }
+}
+
+@CommandHandler(RotateShareLinkCommand)
+export class RotateShareLinkHandler implements ICommandHandler<RotateShareLinkCommand, ShareLink> {
+  constructor(
+    private readonly boards: BoardsRepository,
+    private readonly shareLinks: ShareLinkRepository,
+  ) {}
+
+  async execute(command: RotateShareLinkCommand): Promise<ShareLink> {
+    const link = await this.shareLinks.findById(command.shareLinkId);
+    if (!link) {
+      throw new NotFoundException('Share link not found');
+    }
+    const board = await this.boards.findById(link.boardId);
+    if (!board || board.accountId !== command.accountId) {
+      throw new ForbiddenException();
+    }
+    const rotated = await this.shareLinks.updateToken(link.id, generateShareToken());
+    if (!rotated) {
+      throw new NotFoundException('Share link not found');
+    }
+    return rotated;
   }
 }

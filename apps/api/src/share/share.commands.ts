@@ -13,3 +13,10 @@ export class RevokeShareLinkCommand {
     public readonly accountId: string,
   ) {}
 }
+
+export class RotateShareLinkCommand {
+  constructor(
+    public readonly shareLinkId: string,
+    public readonly accountId: string,
+  ) {}
+}
