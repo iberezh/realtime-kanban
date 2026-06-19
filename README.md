@@ -68,6 +68,7 @@ Limits live in `billing/plan.limits.ts` and are enforced in the command handlers
 - Write path: controller → `CommandBus` → handler → repository → `EventBus`.
 - Read path: `QueryBus` → `GetBoard` assembles the board view in rank order.
 - `KanbanEventsRelay` is the only bridge between domain events and sockets — command handlers never touch a socket.
+- Presence is derived from Socket.IO room membership (`fetchSockets`), so with the Redis adapter (`REDIS_URL`) rooms, broadcasts, and presence all span multiple instances.
 - Auth is a Passport JWT strategy over the `lane_token` cookie; account scoping is checked in the handlers.
 - Billing swaps a `StripeBillingProvider` for a `MockBillingProvider` at module init based on whether `STRIPE_SECRET_KEY` is set.
 - The client feeds both server broadcasts *and* its own optimistic predictions through one pure reducer (`stores/apply-event.ts`).
@@ -105,6 +106,7 @@ To exercise real Stripe checkout, drop test keys into `.env` and run `pnpm --fil
 | `PORT` | no | `4000` | API port |
 | `CORS_ORIGIN` | no | `http://localhost:3002` | Browser origin allowed to send credentials |
 | `APP_URL` | no | = `CORS_ORIGIN` | Public origin for billing return URLs |
+| `REDIS_URL` | no | — | Set to enable the Socket.IO Redis adapter (multi-instance) |
 | `STRIPE_SECRET_KEY` | no | — | Unset ⇒ keyless mock billing |
 | `STRIPE_WEBHOOK_SECRET` | no | — | Verifies webhook signatures |
 | `STRIPE_PRICE_PRO` / `STRIPE_PRICE_BUSINESS` | no | — | Stripe Price IDs (`stripe:setup` generates them) |
@@ -121,19 +123,9 @@ apps/
 ## Tests
 
 ```bash
-pnpm test                                  # unit: ranking invariants, handlers, presence, billing
+pnpm test                                  # unit: ranking invariants, handlers, billing
 pnpm --filter @kanban/api test:integration # REST lifecycle + two-socket realtime e2e (needs Postgres)
 pnpm type-check && pnpm lint
 ```
 
 CI runs type-check → lint → unit → migrate → integration → build on every PR.
-
-## Production notes (honest)
-
-This is a portfolio showcase; a few choices trade production completeness for clarity, and here is what would replace them:
-
-- **Single-instance Socket.IO + in-memory presence** → `@socket.io/redis-adapter` and Redis-backed presence for horizontal scaling.
-- **Fractional ranks** are plenty for board-sized collaboration; an editor-grade product (Figma-scale concurrency) would reach for CRDTs.
-- **Stripe** — the webhook is signature-verified and checkout is reconciled on return, but a real deployment should handle the full subscription lifecycle (dunning, cancellations, proration) via the customer portal and webhook events.
-- **Guest links** carry a bearer token in the URL; they support expiry, but sensitive boards would want rotation and per-link scopes.
-- **No TanStack Query on purpose** — the socket plus a Zustand store is the single source of truth; a second client cache would compete with it.
