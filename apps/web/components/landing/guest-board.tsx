@@ -1,41 +1,29 @@
 'use client';
 
-import { LayoutGroup } from 'framer-motion';
-import demo from './demo.module.css';
-import { type CardData, DemoCard } from './demo-card';
-import { GUEST_COLUMNS, GUEST_MOVER, GUEST_STATIC } from './demo-data';
+import { DemoBoard } from './demo-board';
+import { DemoCursor } from './demo-cursor';
+import { GUEST_CARDS, GUEST_COLUMNS, GUEST_CURSOR, GUEST_FRAMES } from './demo-data';
 import styles from './landing.module.css';
 import { useBoardLoop } from './use-board-loop';
 
-/** Read-only client preview: a card ships to Done in real time, no account needed. */
+const PARK = { left: '30%', top: '40%' };
+
+/** Read-only client preview: the client watches a teammate ship "Checkout v2" to Done in real time. */
 export function GuestBoard() {
-  const step = useBoardLoop(2, 3000);
-  const moverColumn = step === 1 ? 'done' : 'doing';
-  const cardsFor = (columnId: string): CardData[] => {
-    const base = GUEST_STATIC[columnId] ?? [];
-    return moverColumn === columnId ? [GUEST_MOVER, ...base] : base;
-  };
+  const step = useBoardLoop(GUEST_FRAMES.length, 2600);
+  const cursor = GUEST_CURSOR[step] ?? PARK;
 
   return (
     <div className={styles.guestBoard}>
       <span className={styles.roBadge}>read-only · live</span>
-      <LayoutGroup>
-        <div className={demo.cols} style={{ gridTemplateColumns: '1fr 1fr' }}>
-          {GUEST_COLUMNS.map((column) => {
-            const cards = cardsFor(column.id);
-            return (
-              <div key={column.id} className={demo.col}>
-                <h4>
-                  {column.title} <span>{cards.length}</span>
-                </h4>
-                {cards.map((card) => (
-                  <DemoCard key={card.id} card={card} />
-                ))}
-              </div>
-            );
-          })}
-        </div>
-      </LayoutGroup>
+      <DemoBoard
+        columns={GUEST_COLUMNS}
+        cards={GUEST_CARDS}
+        frames={GUEST_FRAMES}
+        step={step}
+        twoColumn
+      />
+      <DemoCursor color="#7c5cff" name="Ivan" pos={cursor} />
     </div>
   );
 }
