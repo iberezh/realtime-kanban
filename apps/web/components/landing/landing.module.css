@@ -330,13 +330,13 @@
   transform: translateY(-4px);
   box-shadow: 0 18px 40px -24px rgba(74, 40, 120, 0.45);
 }
-.featPlan:hover {
-  box-shadow: 0 26px 54px -28px var(--violet);
-}
 .featPlan {
   border: 2px solid var(--violet);
   box-shadow: 0 22px 50px -30px var(--violet);
   position: relative;
+}
+.featPlan:hover {
+  box-shadow: 0 26px 54px -28px var(--violet);
 }
 .tagpop {
   position: absolute;
