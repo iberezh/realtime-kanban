@@ -1,6 +1,8 @@
 'use client';
 
 import { Button, Group, MultiSelect, Select, TextInput } from '@mantine/core';
+import { useDebouncedCallback } from '@mantine/hooks';
+import { useEffect, useRef, useState } from 'react';
 import { type BoardFilter, EMPTY_FILTER, isFilterActive } from '@/lib/card-filter';
 import { useBoardStore } from '@/stores/board-store';
 
@@ -19,13 +21,37 @@ export function BoardFilterBar({ filter, onChange }: BoardFilterBarProps) {
   const labels = useBoardStore((state) => state.labels);
   const members = useBoardStore((state) => state.accountMembers);
 
+  // Search is deferred: the query string updates only once typing pauses (300ms).
+  const [text, setText] = useState(filter.text);
+  const lastPushed = useRef(filter.text);
+  // Merge against the live filter, not the one captured when typing began — a label or
+  // assignee change during the debounce window must not be reverted when the push fires.
+  const filterRef = useRef(filter);
+  filterRef.current = filter;
+  const pushText = useDebouncedCallback((value: string) => {
+    lastPushed.current = value;
+    onChange({ ...filterRef.current, text: value });
+  }, 300);
+
+  // Re-sync the input when the text changes from elsewhere (e.g. the Clear button).
+  useEffect(() => {
+    if (filter.text !== lastPushed.current) {
+      lastPushed.current = filter.text;
+      setText(filter.text);
+    }
+  }, [filter.text]);
+
   return (
     <Group gap="xs" px="lg" pb="sm" wrap="wrap">
       <TextInput
         size="xs"
         placeholder="Search cards…"
-        value={filter.text}
-        onChange={(event) => onChange({ ...filter, text: event.currentTarget.value })}
+        value={text}
+        onChange={(event) => {
+          const value = event.currentTarget.value;
+          setText(value);
+          pushText(value);
+        }}
         w={200}
       />
       <MultiSelect

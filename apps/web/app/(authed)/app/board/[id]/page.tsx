@@ -1,6 +1,11 @@
+import { Suspense } from 'react';
 import { BoardScreen } from '@/components/board-screen';
 
 export default async function BoardPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  return <BoardScreen boardId={id} />;
+  return (
+    <Suspense fallback={null}>
+      <BoardScreen boardId={id} />
+    </Suspense>
+  );
 }
