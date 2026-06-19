@@ -28,7 +28,7 @@ interface DemoBoardProps {
 /** Renders the current frame; cards absent from the previous frame pop in, the rest glide. */
 export function DemoBoard({ columns, cards, frames, step, twoColumn = false }: DemoBoardProps) {
   const frame = frames[step] ?? {};
-  const previous = frames[(step - 1 + frames.length) % frames.length];
+  const previous = frames[(step - 1 + frames.length) % frames.length] ?? {};
 
   return (
     <LayoutGroup>
