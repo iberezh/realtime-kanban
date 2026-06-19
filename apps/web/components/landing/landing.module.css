@@ -200,6 +200,7 @@
 
 .band {
   padding: 48px 0;
+  scroll-margin-top: 80px;
 }
 .lead {
   max-width: 46ch;
@@ -321,11 +322,21 @@
   height: 100%;
   display: flex;
   flex-direction: column;
+  transition:
+    transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.2s;
+}
+.price:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 18px 40px -24px rgba(74, 40, 120, 0.45);
 }
 .featPlan {
   border: 2px solid var(--violet);
   box-shadow: 0 22px 50px -30px var(--violet);
   position: relative;
+}
+.featPlan:hover {
+  box-shadow: 0 26px 54px -28px var(--violet);
 }
 .tagpop {
   position: absolute;
