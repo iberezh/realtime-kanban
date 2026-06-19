@@ -1,8 +1,10 @@
-import type { INestApplicationContext } from '@nestjs/common';
+import { type INestApplicationContext, Logger } from '@nestjs/common';
 import { IoAdapter } from '@nestjs/platform-socket.io';
 import { createAdapter } from '@socket.io/redis-adapter';
 import Redis from 'ioredis';
 import { Server, type ServerOptions } from 'socket.io';
+
+const logger = new Logger('SocketIoRedisAdapter');
 
 /**
  * Applies the validated CORS_ORIGIN to the Socket.IO handshake. Configuring
@@ -29,6 +31,11 @@ export class ConfiguredSocketIoAdapter extends IoAdapter {
     if (this.redisUrl) {
       const pub = new Redis(this.redisUrl);
       const sub = pub.duplicate();
+      // Without an error listener an ioredis connection error is an unhandled
+      // 'error' event that would crash the process; log and let it reconnect.
+      const onError = (error: Error): void => logger.error(error.message);
+      pub.on('error', onError);
+      sub.on('error', onError);
       server.adapter(createAdapter(pub, sub));
     }
     return server;
