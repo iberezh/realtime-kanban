@@ -2,6 +2,10 @@
 
 **Realtime team boards with guest links.** Drag a card and your whole team sees it move instantly; share a read-only link and clients watch progress live — no account needed. Lane is a production-shaped SaaS MVP: multi-tenant auth, realtime collaboration, plan-gated billing, and a marketing landing page, on a CQRS NestJS backend and a Next.js front end.
 
+![CI](https://github.com/iberezh/realtime-kanban/actions/workflows/ci.yml/badge.svg)
+![stack](https://img.shields.io/badge/stack-Next.js%20%7C%20NestJS%20%7C%20Postgres%20%7C%20Socket.IO-blue)
+![license](https://img.shields.io/badge/license-MIT-green)
+
 ![Lane — realtime team boards with guest links](assets/landing.png)
 
 ## Features
@@ -16,6 +20,16 @@
 - **Plans & billing** — Free / Pro / Business via Stripe Checkout + customer portal + a signature-verified webhook, with a keyless mock provider for local runs. Limits are enforced server-side.
 - **Board tooling** — per-column WIP limits and text/label/assignee/due filtering mirrored to the URL.
 - **Marketing landing** — animated, SSR'd landing page at `/` with self-playing live-board demos and pricing.
+
+## Engineering signals
+
+- **CQRS write/read split** — controllers dispatch through `CommandBus`/`QueryBus`; the realtime layer is just an `EventBus` subscriber, so command handlers never touch a socket.
+- **Optimistic concurrency** — the client predicts a move with the *same* deterministic ranking function the server uses, applies it through one pure reducer that also handles server broadcasts, and rolls back on rejection.
+- **Conflict-safe ordering** — fractional rank keys mean a move writes only the moved row; correctness is pinned by a randomized 2000-insert invariant test.
+- **Horizontally scalable realtime** — Socket.IO with an optional Redis adapter; presence is derived from room membership (`fetchSockets`), so rooms, broadcasts, and presence all span instances (verified with two instances on one Redis).
+- **Multi-tenant from the ground up** — JWT cookie auth, per-account scoping, and plan limits enforced in the handlers (not just the UI).
+- **Stripe with a keyless mock fallback** — Checkout, Billing Portal, and a signature-verified webhook; the whole flow runs in tests/CI without any Stripe keys.
+- **Typed and tested** — strict TypeScript (no `any`), 61 unit + 23 integration tests (incl. a two-socket realtime e2e), Biome, CI on every PR.
 
 ## Screenshots
 
@@ -38,15 +52,30 @@ Plans, gated server-side:
 
 Limits live in `billing/plan.limits.ts` and are enforced in the command handlers (e.g. `kanban/commands/board.handlers.ts`, `share/share.command-handlers.ts`), not just the UI.
 
-## Stack
+## Tech specification
 
-| Layer | Tech |
-| --- | --- |
-| Frontend | Next.js (App Router), TypeScript, Mantine, Zustand, React Hook Form, dnd-kit, Framer Motion, socket.io-client |
-| Backend | NestJS, `@nestjs/cqrs`, Socket.IO, Passport JWT, class-validator, Swagger |
-| Database | PostgreSQL, Drizzle ORM (drizzle-kit migrations) |
-| Billing | Stripe (Checkout, customer portal, webhooks) |
-| Tooling | pnpm workspaces, Biome, Vitest, Husky, GitHub Actions |
+| Component | Technology | Details |
+| --- | --- | --- |
+| Web framework | **Next.js 15** (App Router) | SSR landing + client app; **React 19** |
+| UI | **Mantine v8** + TypeScript | theme tokens; Plus Jakarta Sans + JetBrains Mono via `next/font` |
+| State / forms | **Zustand 5**, **React Hook Form 7** | the board store is the single client-side source of truth |
+| Drag & drop | **dnd-kit** (core 6 / sortable 10) | cards and columns, applied optimistically |
+| Animation | **Framer Motion 12** | landing demos, scroll reveals, auth transitions |
+| Realtime client | **socket.io-client 4** | one shared connection on the API origin |
+| Language | **TypeScript** (strict) | `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, no `any` |
+| API framework | **NestJS 11** + **`@nestjs/cqrs` 11** | controller → `CommandBus`/`QueryBus` → handler → repository → `EventBus` |
+| Realtime server | **Socket.IO 4.8** (`@nestjs/websockets`) | room per board; domain events → wire registry → broadcast |
+| Horizontal scaling | **`@socket.io/redis-adapter` 8** + **ioredis 5** | rooms/broadcasts/presence span instances when `REDIS_URL` is set; presence via `fetchSockets` |
+| ORM | **Drizzle ORM 0.44** + drizzle-kit | typed schema + SQL migrations |
+| Database | **PostgreSQL 16** (`pg`) | multi-tenant: account → boards → columns → cards |
+| Ordering | **fractional rank keys** (`a`–`z`) | a move writes only the moved row; randomized 2000-insert invariant test |
+| Auth | **JWT** (`@nestjs/jwt` + `passport-jwt`) | httpOnly cookie `lane_token`, `SameSite=Lax`; **bcryptjs** hashing with a constant-time dummy compare |
+| Authorization | per-account scoping + plan gating | checked in the handlers; **server-enforced** Free/Pro/Business limits |
+| Billing | **Stripe 22** (Checkout + Billing Portal + webhooks) | subscription lifecycle synced from the trusted price id; **mock fallback** when no key is set |
+| Validation | **class-validator** + class-transformer | global `ValidationPipe` (`whitelist`, `transform`) |
+| API docs | **Swagger** (`@nestjs/swagger`) | OpenAPI UI at `/api/v1/docs` |
+| Tests | **Vitest** + Supertest + socket.io-client | 61 unit + 23 integration (REST lifecycle + two-socket realtime e2e) |
+| Tooling | **pnpm** workspaces · **Biome** · **Husky** · **GitHub Actions** | CI on every PR; Node ≥ 22 |
 
 ## Architecture
 
@@ -129,3 +158,7 @@ pnpm type-check && pnpm lint
 ```
 
 CI runs type-check → lint → unit → migrate → integration → build on every PR.
+
+## License
+
+MIT
