@@ -1,7 +1,7 @@
 'use client';
 
 import { Badge, Button, Group } from '@mantine/core';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { confirmCheckout, getBillingStatus } from '@/lib/billing-api';
 import type { BillingStatus } from '@/lib/types';
 import { BillingDialog } from './billing-dialog';
@@ -12,9 +12,15 @@ const LABEL: Record<string, string> = { free: 'Free', pro: 'Pro', business: 'Bus
 export function BillingButton() {
   const [status, setStatus] = useState<BillingStatus | null>(null);
   const [open, setOpen] = useState(false);
+  // Run once: under React Strict Mode the second invocation would read session_id after
+  // the first cleared it, race getBillingStatus ahead of the confirm write, and show 'free'.
+  const loaded = useRef(false);
 
   useEffect(() => {
-    let active = true;
+    if (loaded.current) {
+      return;
+    }
+    loaded.current = true;
     // On return from Stripe Checkout, sync the plan from the session before the webhook lands.
     const params = new URLSearchParams(window.location.search);
     const sessionId = params.get('session_id');
@@ -22,13 +28,7 @@ export function BillingButton() {
       window.history.replaceState({}, '', window.location.pathname);
     }
     const load = sessionId ? confirmCheckout(sessionId) : getBillingStatus();
-    load.then(
-      (next) => active && setStatus(next),
-      () => undefined,
-    );
-    return () => {
-      active = false;
-    };
+    load.then(setStatus, () => undefined);
   }, []);
 
   const paid = status !== null && status.plan !== 'free';
