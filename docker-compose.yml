@@ -1,5 +1,5 @@
-# Full stack: `docker compose up` runs Postgres + the NestJS API + the Next.js web.
-# For API-only development run `docker compose up -d postgres` and `pnpm dev`.
+# Full stack: `docker compose up --build` runs Postgres + the NestJS API + the Next.js web.
+# For API development run `docker compose up -d postgres` and `pnpm dev` on the host.
 services:
   postgres:
     image: postgres:16
@@ -24,8 +24,17 @@ services:
       dockerfile: apps/api/Dockerfile
     environment:
       PORT: 4000
-      CORS_ORIGIN: http://localhost:3000
+      CORS_ORIGIN: http://localhost:3002
+      APP_URL: http://localhost:3002
       DATABASE_URL: postgresql://kanban:kanban@postgres:5432/kanban
+      # Dev-only default so `docker compose up` just works; set JWT_SECRET in your
+      # shell or an .env file for anything real.
+      JWT_SECRET: ${JWT_SECRET:-dev-only-insecure-secret-change-me}
+      # Stripe is optional — leave these unset to run the keyless mock billing provider.
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+      STRIPE_PRICE_PRO: ${STRIPE_PRICE_PRO:-}
+      STRIPE_PRICE_BUSINESS: ${STRIPE_PRICE_BUSINESS:-}
     ports:
       - '4000:4000'
     depends_on:
@@ -39,7 +48,7 @@ services:
       args:
         NEXT_PUBLIC_API_URL: http://localhost:4000/api/v1
     ports:
-      - '3000:3000'
+      - '3002:3002'
     depends_on:
       - api
 

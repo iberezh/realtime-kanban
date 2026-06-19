@@ -20,5 +20,6 @@ RUN pnpm --filter @kanban/web build
 
 WORKDIR /repo/apps/web
 ENV NODE_ENV=production
-EXPOSE 3000
+# `pnpm start` runs `next start -p 3002`; keep EXPOSE and compose ports in sync with it.
+EXPOSE 3002
 CMD ["pnpm", "start"]
