@@ -1,0 +1,40 @@
+name: Deploy to Railway
+
+# Auto-deploys the API and web services to Railway on every push to main.
+#
+# Setup (one-time): add a repo secret named RAILWAY_TOKEN — a Railway *project token*
+# scoped to the production environment of the "lane" project
+# (Railway → project → Settings → Tokens → "Create Token", pick the production env).
+#
+# Builds run on Railway: `railway up` uploads the repo as build context, and each
+# service's RAILWAY_DOCKERFILE_PATH variable selects its Dockerfile
+# (apps/api/Dockerfile, apps/web/Dockerfile). The Postgres service is managed and
+# is not redeployed here.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+# A newer push to main cancels an in-flight deploy.
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install Railway CLI
+        run: npm i -g @railway/cli
+
+      - name: Deploy API
+        run: railway up --service api --ci
+
+      - name: Deploy web
+        run: railway up --service web --ci
