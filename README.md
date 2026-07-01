@@ -2,6 +2,9 @@
 
 **Realtime team boards with guest links.** Drag a card and your whole team sees it move instantly; share a read-only link and clients watch progress live — no account needed. Lane is a production-shaped SaaS MVP: multi-tenant auth, realtime collaboration, plan-gated billing, and a marketing landing page, on a CQRS NestJS backend and a Next.js front end.
 
+**🔗 Live demo → [lane.iberezh.site](https://lane.iberezh.site)**
+
+[![live](https://img.shields.io/badge/live-lane.iberezh.site-brightgreen)](https://lane.iberezh.site)
 ![CI](https://github.com/iberezh/realtime-kanban/actions/workflows/ci.yml/badge.svg)
 ![stack](https://img.shields.io/badge/stack-Next.js%20%7C%20NestJS%20%7C%20Postgres%20%7C%20Socket.IO-blue)
 ![license](https://img.shields.io/badge/license-MIT-green)
