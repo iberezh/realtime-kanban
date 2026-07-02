@@ -3,6 +3,7 @@
 import { Alert, Button, Group, Modal, Stack, Text } from '@mantine/core';
 import { DatePickerInput } from '@mantine/dates';
 import { useEffect, useState } from 'react';
+import { startCheckout } from '@/lib/billing-api';
 import { createShareLink, listShareLinks, revokeShareLink, rotateShareLink } from '@/lib/share-api';
 import type { ShareLink } from '@/lib/types';
 import { ShareLinkRow } from './share-link-row';
@@ -20,6 +21,8 @@ export function ShareDialog({ boardId, opened, onClose }: ShareDialogProps) {
   const [expiry, setExpiry] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [upgradeable, setUpgradeable] = useState(false);
+  const [upgrading, setUpgrading] = useState(false);
 
   useEffect(() => {
     if (!opened) {
@@ -38,14 +41,30 @@ export function ShareDialog({ boardId, opened, onClose }: ShareDialogProps) {
   const create = async (): Promise<void> => {
     setBusy(true);
     setError(null);
+    setUpgradeable(false);
     try {
       const link = await createShareLink(boardId, expiry ? `${expiry}T23:59:59.999Z` : null);
       setLinks((prev) => [link, ...prev]);
       setExpiry(null);
-    } catch {
-      setError('Could not create a share link. Try again.');
+    } catch (err) {
+      // Surface the server's real reason (e.g. the Pro-gate) instead of a generic message.
+      const message =
+        err instanceof Error ? err.message : 'Could not create a share link. Try again.';
+      setError(message);
+      setUpgradeable(/pro feature|upgrade/i.test(message));
     } finally {
       setBusy(false);
+    }
+  };
+
+  const upgrade = async (): Promise<void> => {
+    setUpgrading(true);
+    try {
+      const { url } = await startCheckout('pro');
+      window.location.href = url;
+    } catch {
+      setUpgrading(false);
+      setError('Could not start checkout. Try again.');
     }
   };
   // Only drop the link from the UI once the server confirms it is gone.
@@ -91,8 +110,15 @@ export function ShareDialog({ boardId, opened, onClose }: ShareDialogProps) {
           </Button>
         </Group>
         {error && (
-          <Alert color="red" variant="light">
-            {error}
+          <Alert color={upgradeable ? 'violet' : 'red'} variant="light">
+            <Stack gap="xs" align="flex-start">
+              <Text size="sm">{error}</Text>
+              {upgradeable && (
+                <Button size="xs" loading={upgrading} onClick={upgrade}>
+                  Upgrade to Pro
+                </Button>
+              )}
+            </Stack>
           </Alert>
         )}
         {links.length === 0 ? (

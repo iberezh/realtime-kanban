@@ -22,4 +22,16 @@ export const theme = createTheme({
   fontFamily: 'var(--font-jakarta), system-ui, sans-serif',
   fontFamilyMonospace: 'var(--font-mono), ui-monospace, monospace',
   headings: { fontFamily: 'var(--font-jakarta), system-ui, sans-serif', fontWeight: '800' },
+  components: {
+    // Give every modal a springy scale-in on open (matches the app's motion language).
+    Modal: {
+      defaultProps: {
+        transitionProps: {
+          transition: 'pop',
+          duration: 200,
+          timingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
+        },
+      },
+    },
+  },
 });
